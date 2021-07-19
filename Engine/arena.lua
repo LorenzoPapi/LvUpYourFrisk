@@ -67,17 +67,12 @@ return (function()
 		nsides = 1000
 	end
 
-	function self.SetColor(rgba)
-		rgba = rgba % 4294967296
-		local a = bit.rshift(rgba, 24)
-		rgba = bit.rshift(rgba, 8)
-		local b = bit.rshift(rgba, 16)
-		rgba = bit.rshift(rgba, 8)
-		local g = bit.rshift(rgba, 8)
-		rgba = bit.rshift(rgba, 8)
-		local r = rgba
-		print(r, g, b, a)
-		color = {r/255.0, g/255.0, b/255.0, a/255.0}
+	function self.SetColor(rgb)
+		local r = bit.band(bit.rshift(rgb, 16), 255)
+		local g = bit.band(bit.rshift(rgb, 8), 255)
+		local b = bit.band(rgb, 255)
+		print(r, g, b)
+		color = {r/255.0, g/255.0, b/255.0, 1}
 	end
 
 	function self.Ellipse(r1, r2, x, y)
