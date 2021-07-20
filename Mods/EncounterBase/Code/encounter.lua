@@ -15,7 +15,7 @@ return (function()
 		Inventory.AddItem("<ERROR>", 3)
 		Inventory.AddItem("INITIO", 3)
 		Inventory.AddItem("FINAL FINALIS", 3)
-		Arena.Regular(-130, 320, 240, 16)
+		--Arena.Regular(-130, 320, 240, 16)
 	end
 
 	function self.EnemyDialogueStarting()
@@ -43,7 +43,7 @@ return (function()
 
 	function self.Update(dt)
 		Arena.RotateCWBy(love.timer.getDelta() * 100)
-		Arena.SetColor(love.timer.getTime() * math.random(1, 100))
+		--Arena.SetColor(love.timer.getTime() * math.random(1, 100))
 	end
 
 	function self.BeforeDeath()

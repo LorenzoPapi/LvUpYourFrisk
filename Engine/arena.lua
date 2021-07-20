@@ -1,4 +1,3 @@
---Arena file!
 return (function()
 	local self = {}
 
@@ -18,7 +17,8 @@ return (function()
 	local function rotatePoint(px, py)
 		local a = math.rad(rotation)
 		local cosa, sina = math.cos(a), math.sin(a)
-		return {x = (px - cx) * cosa + (py - cy) * sina + cx, y = (px - cx) * sina + (py - cy) * cosa + cy}
+		--3d arena == all signs equal
+		return {x = (px - cx) * cosa - (py - cy) * sina + cx, y = (px - cx) * sina + (py - cy) * cosa + cy}
 	end
 
 	local function recalculateVertices()
@@ -38,6 +38,9 @@ return (function()
 		love.graphics.rotate(math.rad(rotation))
 		love.graphics.translate(-cx, -cy)
 		love.graphics.setColor(color)
+		if rotated then
+			love.graphics.points(rotated.x, rotated.y)
+		end
 		if circle then
 			lg.ellipse("line", cx, cy, rx, ry, nsides)
 		else
@@ -48,7 +51,7 @@ return (function()
 				table.insert(a, vertices[i].y)
 			end
 			love.graphics.setLineWidth(10)
-			--lg.polygon("line", a)
+			lg.polygon("line", a)
 			love.graphics.setLineWidth(1)
 		end
 		love.graphics.setColor(1, 1, 1, 1)
@@ -71,7 +74,6 @@ return (function()
 		local r = bit.band(bit.rshift(rgb, 16), 255)
 		local g = bit.band(bit.rshift(rgb, 8), 255)
 		local b = bit.band(rgb, 255)
-		print(r, g, b)
 		color = {r/255.0, g/255.0, b/255.0, 1}
 	end
 
@@ -134,8 +136,8 @@ return (function()
 			end
 			return inside
 		else
-			local rotated = rotatePoint(x, y)
-			return ((rotated.x/rx)^2+(rotated.y/ry)^2<1)
+			--TODO: check ellipse
+			return false
 		end
 	end
 
