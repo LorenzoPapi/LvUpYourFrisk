@@ -13,7 +13,7 @@ return (function()
 
 	function self.Start()
 		State("ACTMENU")
-		dialog_text.SetText("")
+		BattleDialog("")
 		self.current = 1
 		self.current_page = 1
 		SelectChoice(1)
@@ -51,9 +51,16 @@ return (function()
 
 	function self.keypressed(k)
 		if (Input.equals(k, "Confirm")) then
-			self.resetPage()
-			self.GetAct(self.current).onclick()
-			self.current = 1
+			if (GetCurrentState() == "ACTMENU") then
+				self.Reset()
+				State("ACTING")
+				self.AddActs(Encounter.enemies[self.current].acts)
+				self.redrawPage()
+			elseif (GetCurrentState() == "ACTING") then
+				self.GetAct(self.current).onclick()
+				self.current = 1
+				self.resetPage()
+			end
 			return
 		elseif (k == "left") then
 			self.current = self.current - 1
@@ -64,7 +71,11 @@ return (function()
 		elseif (k == "down") then
 			self.current = self.current + 2
 		end
-		self.current = math.clamp(self.current, 1, #self.acts)
+		if (GetCurrentState() == "ACTMENU") then
+			self.current = math.clamp(self.current, 1, #Encounter.enemies)
+		elseif (GetCurrentState() == "ACTING") then
+			self.current = math.clamp(self.current, 1, #self.acts)
+		end
 
 		local cur_page = math.ceil(self.current / 4)
 		if not (cur_page == self.current_page) then
@@ -76,14 +87,26 @@ return (function()
 	end
 
 	function self.drawPage()
-		for i=1,4 do
-			local cur = i+4*(self.current_page-1)
-			if self.GetAct(cur) then
-			    self.texts[i] = CreateChoice(self.GetAct(cur).name, i)
+		if (GetCurrentState() == "ACTMENU") then
+			for i=1,4 do
+				local cur = i+4*(self.current_page-1)
+				if Encounter.enemies[i] then
+			    	self.texts[i] = CreateChoice(Encounter.enemies[i].name, i)
+				end
 			end
-		end
-		if (#self.acts > 4) then
-			table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+			if (#Encounter.enemies > 4) then
+				table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+			end
+		elseif (GetCurrentState() == "ACTING") then
+			for i=1,4 do
+				local cur = i+4*(self.current_page-1)
+				if self.GetAct(cur) then
+			    	self.texts[i] = CreateChoice(self.GetAct(cur).name, i)
+				end
+			end
+			if (#self.acts > 4) then
+				table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+			end
 		end
 	end
 
@@ -102,6 +125,7 @@ return (function()
 		table.clear(self.acts)
 		self.current = 1
 		self.current_page = 1
+		SelectChoice(self.current)
 	end
 
 	return self

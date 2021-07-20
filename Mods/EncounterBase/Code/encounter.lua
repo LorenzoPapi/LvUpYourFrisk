@@ -1,14 +1,15 @@
 return (function()
 	local self = require("Engine/encounterbase")
 
-	self.enemies = {"Luigi", "Mario", "Peach", "Cherry", "....?", "...", "$!", "OwO", "Hidden!"}
-	self.encountertext = {"Poseur strikes a pose!", "YES PLEASE WORK"}
-	self.arenasize = {}
+	--self.enemies = {"Luigi", "Mario", "Peach", "Cherry", "....?", "...", "$!", "OwO", "Hidden!"}
+	self.enemies = {"poseur"}
+	self.encountertext = {"Poseur strikes a pose!\nHis moves are too much for me!"}
+	self.flee = true
+	self.fightarena = {200, 253, 100, 387, 500, 387}
 	
 	function self.EncounterStarting()
 		CreateSprite("player")
-		Act.AddAct("Check", CheckMessage)
-		Act.AddActs({{"Defending", function() State("DEFENDING") end}, {"ACT2"}, {"ACT3"}, {"ACT4?"}})
+		--Act.AddAct("Check", CheckMessage)
 		Inventory.AddItems({{"Shotgun", 1}, {"Butterscotch Pie"}, {"Instant Noodles"}, {"CHOCOLATE"}, {"L O V E", 3}, {"Tem armor", 2}})
 		Inventory.AddItem("Corn flakes")
 		Inventory.AddItem("Sea tea")
@@ -25,25 +26,25 @@ return (function()
 	end
 
 	function self.DefenseEnding()
+		self.encountertext = self.RandomEncounterText()
 	end
 
 	function self.HandleSpare()
 		BattleDialog("Overridden!")
 	end
 
-	function HandleFlee()
+	function self.HandleFlee()
 		--TODO: default callback
 	end
 
 	function self.EnteringState(os, ns)
-		if (ns == "DEFENDING") then
-			
-		end
 	end
 
 	function self.Update(dt)
-		Arena.RotateCWBy(love.timer.getDelta() * 100)
-		--Arena.SetColor(love.timer.getTime() * math.random(1, 100))
+		if (GetCurrentState() == "ENEMYDIALOGUE" or GetCurrentState() == "DEFENDING") then
+			Arena.RotateCWBy(love.timer.getDelta() * 100)
+			Arena.SetColor(love.timer.getTime() * math.random(1, 100))
+		end
 	end
 
 	function self.BeforeDeath()

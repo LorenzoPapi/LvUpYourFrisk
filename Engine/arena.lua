@@ -4,6 +4,7 @@ return (function()
 	local circle = false
 
 	local gons = {}
+	local resized = {}
 	local vertices = {}
 
 	local rx = 0
@@ -13,6 +14,7 @@ return (function()
 	local nsides = 1000
 	local rotation = 0
 	local color = {1, 1, 1, 1}
+	local resizing = false
 
 	local function rotatePoint(px, py)
 		local a = math.rad(rotation)
@@ -32,15 +34,23 @@ return (function()
 		recalculateVertices()
 	end
 
+	function self.update(dt)
+		if (resizing) then
+			for i=1,#resized do
+				if not (resized[i] == -1) then
+					gons[i] = math.lerp(gons[i], resized[i], dt/3)
+					recalculateVertices()
+				end
+			end
+		end
+	end
+
 	function self.draw()
 		lg.setLineWidth(5)
 		love.graphics.translate(cx, cy)
 		love.graphics.rotate(math.rad(rotation))
 		love.graphics.translate(-cx, -cy)
 		love.graphics.setColor(color)
-		if rotated then
-			love.graphics.points(rotated.x, rotated.y)
-		end
 		if circle then
 			lg.ellipse("line", cx, cy, rx, ry, nsides)
 		else
@@ -51,7 +61,7 @@ return (function()
 				table.insert(a, vertices[i].y)
 			end
 			love.graphics.setLineWidth(10)
-			lg.polygon("line", a)
+			--lg.polygon("line", a)
 			love.graphics.setLineWidth(1)
 		end
 		love.graphics.setColor(1, 1, 1, 1)
@@ -150,6 +160,25 @@ return (function()
 		end
 		cx = 2 * cx / #gons
 		cy = 2 * cy / #gons
+	end
+
+	function self.Resize(new)
+		-- if (#gons > #new) then
+		-- 	for i=#gons,#new+1,-1 do
+		-- 		table.remove(gons, i)
+		-- 	end
+		-- end
+		-- for i=1,#gons do
+		-- 	print(gons[i])
+		-- end
+		for i=1,#new do
+			if not (new[i] == resized[i]) then
+				resized[i] = new[i]
+			else
+				resized[i] = -1
+			end
+		end
+		resizing = true
 	end
 
 	return self

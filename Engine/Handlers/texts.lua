@@ -10,7 +10,14 @@ return (function()
 
 	function self.Create(content, font, x, y, fpc)
 		local _text = {}
-		_text.content = content or ""
+		local cont = content or ""
+		if (type(content) == "table") then
+			cont = ""
+			for _,t in ipairs(content) do
+				cont = cont .. " " .. t .. "\n"
+			end
+		end
+		_text.content = cont
 		_text.font = font
 		_text.x = x or 0
 		_text.y = y or 0

@@ -7,10 +7,22 @@ return (function()
 	local self = {}
 
 	self.enemies = {}
-	self.music = ""
 	self.encountertext = ""
+	self.flee = true
+	self.fleesuccess = nil
+	self.fleetexts = {"You escaped the fight.", "I've better things to do...", "Stop bothering me.", "I'm outta here."}
+	self.unescape = false
+	self.fightarena = {}
+	
+	--NYI
+	self.music = ""
+	self.nextwaves = {}
+	self.wavetimer = 4.0
 	self.enemypositions = {}
-	self.arenasize = {}
+	self.revive = false
+	self.deathtext = {}
+	self.deathmusic = ""
+	self.Wave = {}
 
 	function self.EncounterStarting()
 	end
@@ -28,8 +40,7 @@ return (function()
 		BattleDialog("You cannot spare the enemy yet.\n[w:30]Wait for the name to be yellow.")
 	end
 
-	function HandleFlee()
-		--TODO: default callback
+	function self.HandleFlee()
 	end
 
 	function self.EnteringState(os, ns)
@@ -38,6 +49,12 @@ return (function()
 	function self.Update(dt)
 	end
 
+	function self.RandomEncounterText()
+		local enemy = self.enemies[math.random(1, #self.enemies)]
+		return enemy.comments[math.random(1, #enemy.comments)]
+	end
+
+	--NYI
 	function self.BeforeDeath()
 	end
 	

@@ -15,7 +15,7 @@ return (function()
 
 	function self.Start()
 		State("FIGHTMENU")
-		dialog_text.SetText("")
+		BattleDialog("")
 		self.current = 1
 		self.current_page = 1
 		SelectChoice(1)
@@ -24,11 +24,11 @@ return (function()
 
 	function self.keypressed(k)
 		if (Input.equals(k, "Confirm")) then
-			if (current_state == "FIGHTMENU") then
+			if (GetCurrentState() == "FIGHTMENU") then
 				self.resetPage()
 				self.current = 1
 				State("ATTACKING")
-			elseif (current_state == "ATTACKING") then
+			elseif (GetCurrentState() == "ATTACKING") then
 				bar.SetAnimation({"fight_bar_0", "fight_bar_1"}, 1/12)
 				hit = true
 			end
@@ -57,7 +57,7 @@ return (function()
 		for i=1,4 do
 			local cur = i+4*(self.current_page-1)
 			if Encounter.enemies[cur] then
-				self.texts[i] = CreateChoice(Encounter.enemies[cur], i)
+				self.texts[i] = CreateChoice(Encounter.enemies[cur].name, i)
 			end
 		end
 		if (#Encounter.enemies > 4) then
@@ -91,12 +91,6 @@ return (function()
 		Player.sprite.alpha = 0
 		local target = CreateSprite("fight_target", 37 + 10, 255 + 7.5)
 		bar = CreateSprite("fight_bar_0", 595, 255)
-	end
-
-	function self.Reset()
-		table.clear(Encounter.enemies)
-		self.current = 1
-		self.current_page = 1
 	end
 
 	return self

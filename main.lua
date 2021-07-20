@@ -76,20 +76,38 @@ function love.keypressed(key, scancode, isrepeat)
 		end
 		current_mod = math.clamp(current_mod, 1, #mods, true)
 	elseif (current_menu == "none") then
-		if (key == "escape") then
-			current_menu = "mods"
-			Engine.unloadEngine()
-			loadAllMods()
-			package.loaded["Mods/" .. mods[current_mod] .. "/Code/encounter"] = nil
+		if (key == "escape" and not Encounter.unescape) then
+			unloadCurrentMod()
 		end
 		Engine.keypressed(key, scancode, isrepeat)
 	end
 end
 
+function unloadCurrentMod()
+	current_menu = "mods"
+	Engine.unloadEngine()
+	loadAllMods()
+	package.loaded["Mods/" .. mods[current_mod] .. "/Code/encounter"] = nil
+	for k,v in ipairs(Encounter.enemies) do
+		Encounter.enemies[k] = v.scriptName
+		package.loaded["Mods/"  .. mods[current_mod] .. "/Code/Monsters/" .. v.scriptName] = nil
+	end
+	package.loaded["Engine/engine"] = nil
+	package.loaded["Engine/arena"] = nil
+	package.loaded["Engine/player"] = nil
+end
+
 function loadCurrentMod()
 	--For now, only one encounter per mod.
+	Engine = require("Engine/engine")
+	Arena = require("Engine/arena")
+	Player = require("Engine/player")
 	local mod = "Mods/" .. mods[current_mod]
 	Encounter = require(mod .. "/Code/encounter")
+	for k,v in ipairs(Encounter.enemies) do
+		Encounter.enemies[k] = require(mod .. "/Code/Monsters/" .. v)
+		Encounter.enemies[k].scriptName = v
+	end
 	loadResourcesFromDirectory("Default")
 	loadResourcesFromDirectory(mod .. "/Assets")
 	Engine.loadEngine()
@@ -154,6 +172,9 @@ function math.clamp(value, min, max, recur)
 	end
 end
 
+function math.lerp(a,b,t) 
+	return (1-t)*a + t*b
+end
 
 Input = {
 	Confirm = 	{"z", "return"},
@@ -179,10 +200,6 @@ function Input.isDown(typein)
 		end	
 	end
 end
-
-Engine = require("Engine/engine")
-Arena = require("Engine/arena")
-Player = require("Engine/player")
 Texts = require("Engine/Handlers/texts")
 Sprites = require("Engine/Handlers/sprites")
 Inventory = require("Engine/Handlers/item")

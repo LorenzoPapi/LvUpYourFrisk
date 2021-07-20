@@ -14,7 +14,7 @@ return (function()
 	function self.Start()
 		if (#self.items > 0) then
 			State("ITEMMENU")
-			dialog_text.SetText("")
+			BattleDialog("")
 			self.current = 1
 			self.current_page = 1
 			self.drawPage()
