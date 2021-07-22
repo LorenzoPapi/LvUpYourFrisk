@@ -41,6 +41,7 @@ return (function()
 	end
 
 	function self.HandleFlee()
+		State("DONE")
 	end
 
 	function self.EnteringState(os, ns)

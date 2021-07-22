@@ -3,6 +3,7 @@ return (function()
 
 	local circle = false
 
+	local original = {}
 	local gons = {}
 	local resized = {}
 	local vertices = {}
@@ -15,11 +16,13 @@ return (function()
 	local rotation = 0
 	local color = {1, 1, 1, 1}
 	local resizing = false
+	local timer = 0
+	local seconds = 2
 
 	local function rotatePoint(px, py)
+		--3d arena == all signs equal
 		local a = math.rad(rotation)
 		local cosa, sina = math.cos(a), math.sin(a)
-		--3d arena == all signs equal
 		return {x = (px - cx) * cosa - (py - cy) * sina + cx, y = (px - cx) * sina + (py - cy) * cosa + cy}
 	end
 
@@ -30,17 +33,39 @@ return (function()
 		end
 	end
 
+	local function calculateCentroid()
+		for i=1,#gons,2 do
+			cx = cx + gons[i]
+			cy = cy + gons[i+1]
+		end
+		cx = 2 * cx / #gons
+		cy = 2 * cy / #gons
+	end
+
+	local function resetOriginal()
+		for i=1,#gons do
+			original[i] = gons[i]
+		end
+	end
+
 	function self.load()
+		resetOriginal()
 		recalculateVertices()
 	end
 
 	function self.update(dt)
 		if (resizing) then
+			if (timer < 1) then
+				timer = timer + dt / (seconds)
+			elseif (timer >= 1) then
+				timer = 0
+				resizing = false
+				resetOriginal()
+			end
 			for i=1,#resized do
-				if not (resized[i] == -1) then
-					gons[i] = math.lerp(gons[i], resized[i], dt/3)
-					recalculateVertices()
-				end
+				gons[i] = math.lerp(original[i], resized[i], timer)
+				recalculateVertices()
+				calculateCentroid()
 			end
 		end
 	end
@@ -55,36 +80,26 @@ return (function()
 			lg.ellipse("line", cx, cy, rx, ry, nsides)
 		else
 			lg.polygon("line", gons)
-			local a = {}
-			for i=1,#vertices do
-				table.insert(a, vertices[i].x)
-				table.insert(a, vertices[i].y)
-			end
-			love.graphics.setLineWidth(10)
-			--lg.polygon("line", a)
-			love.graphics.setLineWidth(1)
+			-- local a = {}
+			-- for i=1,#vertices do
+			-- 	table.insert(a, vertices[i].x)
+			-- 	table.insert(a, vertices[i].y)
+			-- end
+			-- love.graphics.setLineWidth(10)
+			-- lg.polygon("line", a)
+			-- love.graphics.setLineWidth(1)
 		end
 		love.graphics.setColor(1, 1, 1, 1)
 		lg.origin()
 		lg.setLineWidth(1)
 	end
 
-	function self.Reset()
-		table.clear(gons)
-		table.clear(vertices)
-		circle = false
-		rotation = 0
-		radius = 0
-		cx = 0
-		cy = 0
-		nsides = 1000
-	end
-
-	function self.SetColor(rgb)
-		local r = bit.band(bit.rshift(rgb, 16), 255)
-		local g = bit.band(bit.rshift(rgb, 8), 255)
-		local b = bit.band(rgb, 255)
-		color = {r/255.0, g/255.0, b/255.0, 1}
+	function self.SetColor(rgba)
+		local r = bit.band(bit.rshift(rgba, 24), 255) / 255.0
+		local g = bit.band(bit.rshift(rgba, 16), 255) / 255.0
+		local b = bit.band(bit.rshift(rgba, 8), 255) / 255.0
+		local a = bit.band(rgba, 255) / 255.0
+		color = {r, g, b, a}
 	end
 
 	function self.Ellipse(r1, r2, x, y)
@@ -154,31 +169,40 @@ return (function()
 	function self.Polygon(t)
 		circle = false
 		gons = t
-		for i=1,#gons,2 do
-			cx = cx + gons[i]
-			cy = cy + gons[i+1]
-		end
-		cx = 2 * cx / #gons
-		cy = 2 * cy / #gons
+		resetOriginal()
+		calculateCentroid()
 	end
 
-	function self.Resize(new)
-		-- if (#gons > #new) then
-		-- 	for i=#gons,#new+1,-1 do
-		-- 		table.remove(gons, i)
-		-- 	end
-		-- end
-		-- for i=1,#gons do
-		-- 	print(gons[i])
-		-- end
-		for i=1,#new do
-			if not (new[i] == resized[i]) then
-				resized[i] = new[i]
-			else
-				resized[i] = -1
+	function self.Resize(new, s, immediate)
+		seconds = s or seconds
+		if (immediate) then
+			self.Polygon(new)
+		else
+			resized = new
+			if (#gons > #new) then
+				local s = #new
+				local sign = resized[#new] > resized[#new - 2] and 1 or -1
+				for i=#new+1,#gons,2 do
+					resized[i] = resized[s-1] + sign * 1
+					resized[i+1] = resized[s] + sign * 1
+					s = s + 2
+				end
+			elseif (#gons < #new) then
+			    local s = 1
+			    local old = {}
+			    for i=1,#gons do
+			    	old[i] = gons[i]
+			    end
+				for i=#gons+1,#new,2 do
+					gons[i] = old[s] - 0.01
+					gons[i+1] = old[s+1] - 0.01
+					s = math.clamp(s + 2, 1, #old, true)
+				end
+				resetOriginal()
 			end
+			resizing = true
+			timer = 0
 		end
-		resizing = true
 	end
 
 	return self

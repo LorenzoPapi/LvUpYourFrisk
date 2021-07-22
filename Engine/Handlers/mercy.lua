@@ -11,7 +11,16 @@ return (function()
 	function self.Start()
 		State("MERCYMENU")
 		BattleDialog("")
-		self.texts[1] = CreateChoice("Spare", 1)
+		local spare = false
+		
+		for i=1,#Encounter.enemies do
+			if (Encounter.enemies[i].canspare) then
+				spare = true
+				break
+			end
+		end
+		self.texts[1] = CreateChoice((spare and "[color:ffff00ff]" or "") .. "Spare", 1)
+
 		if (Encounter.flee) then
 			self.texts[2] = CreateChoice("Flee", 3)
 		end
@@ -21,8 +30,7 @@ return (function()
 
 	local function flee()
 		Encounter.HandleFlee()
-		BattleDialog(Encounter.fleetexts[math.random(1, #Encounter.fleetexts)])
-		State("DONE")
+		BattleDialog(Encounter.fleetexts[math.random(1, #Encounter.fleetexts)] .. "[func:State,DONE]")
 	end
 
 	function self.keypressed(key)
@@ -38,7 +46,7 @@ return (function()
 				Encounter.HandleSpare()
 			elseif (Encounter.fleesuccess == false) then
 				--ADD failFleeTexts
-				BattleDialog("You tried to flee the battle...\n[w:30]You failed.")
+				BattleDialog("You tried to flee the battle...\n[w:30][w:10]You failed.")
 			else
 				if (Encounter.fleesuccess) then
 					flee()

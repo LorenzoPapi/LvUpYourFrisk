@@ -31,12 +31,14 @@ return (function()
 	end
 
 	function self.draw()
+		love.graphics.setColor(1, 1, 1, self.sprite.alpha)
 		local a = {}
 		for i=1,#self.box do
 			table.insert(a, self.x + self.box[i][1])
 			table.insert(a, self.y + self.box[i][2])
 		end	
 		love.graphics.polygon("line", a)
+		love.graphics.setColor(1, 1, 1, 1)
 	end
 
 	function self.update()

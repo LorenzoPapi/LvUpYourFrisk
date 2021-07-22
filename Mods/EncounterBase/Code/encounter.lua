@@ -5,11 +5,12 @@ return (function()
 	self.enemies = {"poseur"}
 	self.encountertext = {"Poseur strikes a pose!\nHis moves are too much for me!"}
 	self.flee = true
-	self.fightarena = {200, 253, 100, 387, 500, 387}
+	self.fightarena = {	320, 50, 
+						200, 300, 
+						280, 400, }
 	
 	function self.EncounterStarting()
 		CreateSprite("player")
-		--Act.AddAct("Check", CheckMessage)
 		Inventory.AddItems({{"Shotgun", 1}, {"Butterscotch Pie"}, {"Instant Noodles"}, {"CHOCOLATE"}, {"L O V E", 3}, {"Tem armor", 2}})
 		Inventory.AddItem("Corn flakes")
 		Inventory.AddItem("Sea tea")
@@ -17,12 +18,25 @@ return (function()
 		Inventory.AddItem("INITIO", 3)
 		Inventory.AddItem("FINAL FINALIS", 3)
 		--Arena.Regular(-130, 320, 240, 16)
+		--Arena.Polygon({35, 253, 35, 387, 605, 387, 605, 200, 300, 200, 400, 300}, true)
 	end
 
 	function self.EnemyDialogueStarting()
+		
 	end
 
 	function self.EnemyDialogueEnding()
+		Player.MoveTo(320, 240)
+		self.fightarena = {	320, 50, 
+						200, 300, 
+						280, 400, 
+						360, 400, 
+						100, 100,
+						293, 129,
+						102, 192,
+						192, 10,
+						102, 300,
+						440, 300 }
 	end
 
 	function self.DefenseEnding()
@@ -34,7 +48,7 @@ return (function()
 	end
 
 	function self.HandleFlee()
-		--TODO: default callback
+		BattleDialog("Overridden!")
 	end
 
 	function self.EnteringState(os, ns)
@@ -42,8 +56,8 @@ return (function()
 
 	function self.Update(dt)
 		if (GetCurrentState() == "ENEMYDIALOGUE" or GetCurrentState() == "DEFENDING") then
-			Arena.RotateCWBy(love.timer.getDelta() * 100)
-			Arena.SetColor(love.timer.getTime() * math.random(1, 100))
+			--Arena.RotateCWBy(love.timer.getDelta() * 100)
+			--Arena.SetColor(love.timer.getTime() * math.random(1, 100))
 		end
 	end
 

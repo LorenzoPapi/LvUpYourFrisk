@@ -87,14 +87,16 @@ function unloadCurrentMod()
 	current_menu = "mods"
 	Engine.unloadEngine()
 	loadAllMods()
+	for k,v in pairs(package.loaded) do
+		if (k:sub(1, 6) == "Engine") then
+			package.loaded[k] = nil
+		end
+	end
 	package.loaded["Mods/" .. mods[current_mod] .. "/Code/encounter"] = nil
 	for k,v in ipairs(Encounter.enemies) do
 		Encounter.enemies[k] = v.scriptName
 		package.loaded["Mods/"  .. mods[current_mod] .. "/Code/Monsters/" .. v.scriptName] = nil
 	end
-	package.loaded["Engine/engine"] = nil
-	package.loaded["Engine/arena"] = nil
-	package.loaded["Engine/player"] = nil
 end
 
 function loadCurrentMod()
@@ -102,6 +104,14 @@ function loadCurrentMod()
 	Engine = require("Engine/engine")
 	Arena = require("Engine/arena")
 	Player = require("Engine/player")
+	Texts = require("Engine/Handlers/texts")
+	Sprites = require("Engine/Handlers/sprites")
+	Inventory = require("Engine/Handlers/item")
+	Mercy = require("Engine/Handlers/mercy")
+	Act = require("Engine/Handlers/act")
+	Fight = require("Engine/Handlers/fight")
+	UI = require("Engine/Handlers/ui")
+
 	local mod = "Mods/" .. mods[current_mod]
 	Encounter = require(mod .. "/Code/encounter")
 	for k,v in ipairs(Encounter.enemies) do
@@ -156,6 +166,22 @@ function love.update(dt)
 	end
 end
 
+function string:split(sep)
+	local sep, fields = sep or ":", {}
+   	local pattern = string.format("([^%s]+)", sep)
+   	self:gsub(pattern, function(c) fields[#fields+1] = c end)
+   	return fields
+end
+
+function table.contains(t, e)
+	for i=1,#t do
+		if (t[i] == e) then
+			return true
+		end
+	end
+	return false
+end
+
 function table.clear(t)
 	for i=1,#t do
 		t[i] = nil
@@ -172,7 +198,7 @@ function math.clamp(value, min, max, recur)
 	end
 end
 
-function math.lerp(a,b,t) 
+function math.lerp(a, b, t)
 	return (1-t)*a + t*b
 end
 
@@ -200,9 +226,3 @@ function Input.isDown(typein)
 		end	
 	end
 end
-Texts = require("Engine/Handlers/texts")
-Sprites = require("Engine/Handlers/sprites")
-Inventory = require("Engine/Handlers/item")
-Mercy = require("Engine/Handlers/mercy")
-Act = require("Engine/Handlers/act")
-Fight = require("Engine/Handlers/fight")

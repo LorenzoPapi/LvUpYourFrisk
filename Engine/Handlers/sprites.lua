@@ -29,6 +29,11 @@ return (function()
 
 		local timer = 0
 
+		function _sprite.Set(spr)
+			_sprite.frame = 1
+			_sprite.list = {spr}
+		end
+
 		function _sprite.SetColor(r, g, b, a)
 			_sprite.color = {r, g, b, a or _sprite.alpha}
 		end
@@ -42,7 +47,7 @@ return (function()
 			_sprite.ypivot = y
 		end
 
-		function _sprite.SetScale(x, y)
+		function _sprite.Scale(x, y)
 			_sprite.xscale = x
 			_sprite.yscale = y
 		end
@@ -69,7 +74,8 @@ return (function()
 
 		function _sprite.draw()
 			local s = _sprite
-			table.insert(s.color, 4, s.alpha)
+			table.remove(s.color)
+			table.insert(s.color, s.alpha)
 			lg.setColor(s.color)
 			lg.draw(sprites[s.list[s.frame]], s.x, s.y, s.rotation, s.xscale, s.yscale, s.xpivot, s.ypivot)
 			lg.setColor(1, 1, 1, 1)

@@ -9,13 +9,13 @@ return (function()
 	self.acts = {}
 	self.texts = {}
 	self.current = 1
-	self.current_page = 1
+	self.page = 1
 
 	function self.Start()
 		State("ACTMENU")
 		BattleDialog("")
 		self.current = 1
-		self.current_page = 1
+		self.page = 1
 		SelectChoice(1)
 		self.drawPage()
 	end
@@ -54,7 +54,11 @@ return (function()
 			if (GetCurrentState() == "ACTMENU") then
 				self.Reset()
 				State("ACTING")
-				self.AddActs(Encounter.enemies[self.current].acts)
+				local enemy = Encounter.enemies[self.current]
+				if (enemy.cancheck) then
+					self.AddAct("Check", function () BattleDialog(enemy.name .. " " .. enemy.atk .. " ATK " .. enemy.def .. " DEF\n" .. enemy.check) end)
+				end
+				self.AddActs(enemy.acts)
 				self.redrawPage()
 			elseif (GetCurrentState() == "ACTING") then
 				self.GetAct(self.current).onclick()
@@ -71,15 +75,11 @@ return (function()
 		elseif (k == "down") then
 			self.current = self.current + 2
 		end
-		if (GetCurrentState() == "ACTMENU") then
-			self.current = math.clamp(self.current, 1, #Encounter.enemies)
-		elseif (GetCurrentState() == "ACTING") then
-			self.current = math.clamp(self.current, 1, #self.acts)
-		end
+		self.current = math.clamp(self.current, 1, GetCurrentState() == "ACTMENU" and #Encounter.enemies or #self.acts)
 
-		local cur_page = math.ceil(self.current / 4)
-		if not (cur_page == self.current_page) then
-			self.current_page = cur_page
+		local newpage = math.ceil(self.current / 4)
+		if not (newpage == self.page) then
+			self.page = newpage
 			self.redrawPage()
 		end
 
@@ -89,23 +89,23 @@ return (function()
 	function self.drawPage()
 		if (GetCurrentState() == "ACTMENU") then
 			for i=1,4 do
-				local cur = i+4*(self.current_page-1)
+				local cur = i+4*(self.page-1)
 				if Encounter.enemies[i] then
-			    	self.texts[i] = CreateChoice(Encounter.enemies[i].name, i)
+					self.texts[i] = CreateChoice((Encounter.enemies[i].canspare and "[color:ffff00ff]" or "") .. Encounter.enemies[i].name, i)
 				end
 			end
 			if (#Encounter.enemies > 4) then
-				table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+				table.insert(self.texts, CreateText("[instant]PAGE " .. self.page, "uidialog", 300, 350))
 			end
 		elseif (GetCurrentState() == "ACTING") then
 			for i=1,4 do
-				local cur = i+4*(self.current_page-1)
+				local cur = i+4*(self.page-1)
 				if self.GetAct(cur) then
 			    	self.texts[i] = CreateChoice(self.GetAct(cur).name, i)
 				end
 			end
 			if (#self.acts > 4) then
-				table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+				table.insert(self.texts, CreateText("[instant]PAGE " .. self.page, "uidialog", 300, 350))
 			end
 		end
 	end
@@ -124,7 +124,7 @@ return (function()
 	function self.Reset()
 		table.clear(self.acts)
 		self.current = 1
-		self.current_page = 1
+		self.page = 1
 		SelectChoice(self.current)
 	end
 

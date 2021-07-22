@@ -11,13 +11,16 @@ return (function()
 	self.randomdialogue = {}
 	self.currentdialogue = {}
 	self.font = "monster"
+	self.cancheck = true
+	self.atk = 0
+	self.def = 0
+	self.check = ""
+	self.canspare = false
 
 	--NYI
 	self.comments = {}
 	self.defensemisstext = ""
 	self.noattackmisstext = ""
-	self.cancheck = true
-	self.canspare = false
 	self.isactive = true
 	self.sprite = ""
 	self.monstersprite = nil
@@ -25,11 +28,8 @@ return (function()
 	self.dialogueprefix = ""
 	self.maxhp = 0
 	self.hp = self.maxhp
-	self.atk = 0
-	self.def = 0
 	self.xp = 0
 	self.gold = 0
-	self.check = ""
 	self.unkillable = false
 	self.posx = 0
 	self.posy = 0

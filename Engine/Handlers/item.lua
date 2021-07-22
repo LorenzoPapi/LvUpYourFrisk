@@ -9,14 +9,14 @@ return (function()
 	self.items = {}
 	self.texts = {}
 	self.current = 1
-	self.current_page = 1
+	self.page = 1
 
 	function self.Start()
 		if (#self.items > 0) then
 			State("ITEMMENU")
 			BattleDialog("")
 			self.current = 1
-			self.current_page = 1
+			self.page = 1
 			self.drawPage()
 			SelectChoice(1)
 		end
@@ -102,9 +102,9 @@ return (function()
 		end
 		self.current = math.clamp(self.current, 1, #self.items)
 
-		local cur_page = math.ceil(self.current / 4)
-		if not (cur_page == self.current_page) then
-			self.current_page = cur_page
+		local newpage = math.ceil(self.current / 4)
+		if not (newpage == self.page) then
+			self.page = newpage
 			self.redrawPage()
 		end
 
@@ -113,13 +113,13 @@ return (function()
 
 	function self.drawPage()
 		for i=1,4 do
-			local cur = i+4*(self.current_page-1)
+			local cur = i+4*(self.page-1)
 			if self.GetItem(cur) then
 			    self.texts[i] = CreateChoice(self.GetItem(cur).name, i)
 			end
 		end
 		if (#self.items > 4) then
-			table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+			table.insert(self.texts, CreateText("[instant]PAGE " .. self.page, "uidialog", 300, 350))
 		end
 	end
 
@@ -137,7 +137,7 @@ return (function()
 	function self.Reset()
 		table.clear(self.items)
 		self.current = 1
-		self.current_page = 1
+		self.page = 1
 	end
 
 	return self

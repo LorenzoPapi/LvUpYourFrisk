@@ -8,7 +8,7 @@ return (function()
 
 	self.texts = {}
 	self.current = 1
-	self.current_page = 1
+	self.page = 1
 	self.xbar = 595
 	local bar = nil
 	local hit = false
@@ -17,7 +17,7 @@ return (function()
 		State("FIGHTMENU")
 		BattleDialog("")
 		self.current = 1
-		self.current_page = 1
+		self.page = 1
 		SelectChoice(1)
 		self.drawPage()
 	end
@@ -44,9 +44,9 @@ return (function()
 		end
 		self.current = math.clamp(self.current, 1, #Encounter.enemies)
 
-		local cur_page = math.ceil(self.current / 4)
-		if not (cur_page == self.current_page) then
-			self.current_page = cur_page
+		local newpage = math.ceil(self.current / 4)
+		if not (newpage == self.page) then
+			self.page = newpage
 			self.redrawPage()
 		end
 
@@ -55,13 +55,13 @@ return (function()
 
 	function self.drawPage()
 		for i=1,4 do
-			local cur = i+4*(self.current_page-1)
+			local cur = i+4*(self.page-1)
 			if Encounter.enemies[cur] then
-				self.texts[i] = CreateChoice(Encounter.enemies[cur].name, i)
+				self.texts[i] = CreateChoice((Encounter.enemies[cur].canspare and "[color:ffff00ff]" or "") .. Encounter.enemies[cur].name, i)
 			end
 		end
 		if (#Encounter.enemies > 4) then
-			table.insert(self.texts, CreateText("[instant]PAGE " .. self.current_page, "uidialog", 300, 350))
+			table.insert(self.texts, CreateText("[instant]PAGE " .. self.page, "uidialog", 300, 350))
 		end
 	end
 
