@@ -117,6 +117,7 @@ return (function()
 		local insert = ""
 		if (text == "" or not text) then
 			bdialog.SetText("", "uidialog")
+			bdialog.End()
 			return
 		elseif (type(text) == "string") then
 			insert = checkNewlines(text)

@@ -30,7 +30,7 @@ return (function()
 
 	local function flee()
 		Encounter.HandleFlee()
-		BattleDialog(Encounter.fleetexts[math.random(1, #Encounter.fleetexts)] .. "[func:State,DONE]")
+		BattleDialog(Encounter.fleetexts[math.random(1, #Encounter.fleetexts)] .. "[w:20] [func:State,DONE]")
 	end
 
 	function self.keypressed(key)

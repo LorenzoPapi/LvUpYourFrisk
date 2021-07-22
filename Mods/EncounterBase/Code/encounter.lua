@@ -4,6 +4,7 @@ return (function()
 	--self.enemies = {"Luigi", "Mario", "Peach", "Cherry", "....?", "...", "$!", "OwO", "Hidden!"}
 	self.enemies = {"poseur"}
 	self.encountertext = {"Poseur strikes a pose!\nHis moves are too much for me!"}
+	self.fleesuccess = true
 	self.flee = true
 	self.fightarena = {	320, 50, 
 						200, 300, 
