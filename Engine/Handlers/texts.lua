@@ -58,6 +58,7 @@ return (function()
 		_text.color = {1, 1, 1, 1}
 		_text.active = true
 		_text.ended = false 	--has ended printing
+		_text.voice = "monsterfont"
 		
 		local spc = 0 			--seconds per character
 		local timer = 0
@@ -101,6 +102,10 @@ return (function()
 			end
 		end
 
+		function _text.SetVoice(voice)
+			_text.voice = voice
+		end
+
 		function _text.update(dt)
 			if not (_text.ended) then
 				for k,v in pairs(textcommands) do
@@ -113,8 +118,10 @@ return (function()
 				spc = _text.speed * dt
 				timer = timer + dt
 				if (timer >= spc) then
+					Audio.StopVoice(_text.voice)
 					timer = timer - spc
 					char = char + 1
+					Audio.PlayVoice(_text.voice)
 				end
 				if (char == _text.content:len() and cmdnumber == 0) then
 					_text.End()
@@ -149,8 +156,6 @@ return (function()
 		table.insert(self.texts, _text)
 		return _text
 	end
-
-
 
 	function self.draw()
 		for i=1,#self.texts do

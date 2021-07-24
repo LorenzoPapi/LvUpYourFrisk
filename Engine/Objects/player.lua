@@ -42,20 +42,19 @@ return (function()
 	end
 
 	function self.update()
-		local isDown = Input.isDown
-		local mul = isDown("Cancel") and 1 or 2
+		local mul = Input.GetKey(Input.Cancel) > 0 and 1 or 2
 		local x = self.x
 		local y = self.y
-		if isDown("Up") then
+		if Input.GetKey(Input.Up) > 0 then
 			y = y - mul
 		end
-		if isDown("Down") then
+		if Input.GetKey(Input.Down) > 0 then
 			y = y + mul
 		end
-		if isDown("Left") then
+		if Input.GetKey(Input.Left) > 0 then
 			x = x - mul
 		end
-		if isDown("Right") then
+		if Input.GetKey(Input.Right) > 0 then
 			x = x + mul
 		end
 

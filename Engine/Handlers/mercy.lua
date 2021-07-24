@@ -40,7 +40,7 @@ return (function()
 			self.choice = 3
 		end
 		SelectChoice(self.choice)
-		if Input.GetKey(Input.Confirm) == 1 then
+		if Input.IsDown(Input.Confirm) then
 			Audio.PlaySound("confirm")
 			self.resetPage()
 			if (self.choice == 1) then

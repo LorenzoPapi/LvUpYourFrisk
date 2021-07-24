@@ -7,68 +7,53 @@ local previews = {}
 local soundext = {".wav", ".mp3", ".ogg"}
 local noreload = {"input", "time"}
 
-local function loadResourcesFromDirectory(directory)
-	local dir = directory .. "/Sprites/"
+local function forAllFilesIn(directory, callback)
 	local dirs = {}
-	table.insert(dirs, dir)
-
+	table.insert(dirs, directory)
 	for _,d in pairs(dirs) do
 		for _,f in pairs(love.filesystem.getDirectoryItems(d)) do
-			if (f:sub(-4) == ".png") then
-				sprites[f:sub(1, -5)] = lg.newImage(d .. f)
-			elseif not (f:find("\\.")) then
+			callback(d, f)
+			if not (f:find("\\.")) then
 				table.insert(dirs, d .. f .. "/")
 			end
 		end
 	end
+end
 
-	dir = directory .. "/Fonts/"
-	table.clear(dirs)
-	table.insert(dirs, dir)
-
-	for _,d in pairs(dirs) do
-		for _,f in pairs(love.filesystem.getDirectoryItems(d)) do
-			if (f:sub(-4) == ".ttf" or f:sub(-4) == ".otf") then
-				local id = f:sub(1, -5)
-				local size_file = d .. id .. ".size"
-				local size = love.filesystem.getInfo(size_file) == nil and 12 or tonumber(love.filesystem.read(size_file), 10)
-				fonts[id] = lg.newFont(d .. f, size)
-				fonts[id]:setFilter("nearest", "nearest")
-			elseif not (f:find("\\.")) then
-				table.insert(dirs, d .. f .. "/")
-			end
+local function loadResourcesFromDirectory(directory)
+	forAllFilesIn(directory .. "/Sprites/", function(d, f)
+		if (f:sub(-4) == ".png") then
+			sprites[f:sub(1, -5)] = lg.newImage(d .. f)
 		end
-	end
+	end)
 
-	dir = directory .. "/Sounds/"
-	table.clear(dirs)
-	table.insert(dirs, dir)
-
-	for _,d in pairs(dirs) do
-		for _,f in pairs(love.filesystem.getDirectoryItems(d)) do
-			if (table.contains(soundext, f:sub(-4))) then
-				local id = f:sub(1, -5)
-				sounds[id] = love.audio.newSource(d .. f, "static")
-			elseif not (f:find("\\.")) then
-				table.insert(dirs, d .. f .. "/")
-			end
+	forAllFilesIn(directory .. "/Fonts/", function(d, f) 
+		if (f:sub(-4) == ".ttf" or f:sub(-4) == ".otf") then
+			local id = f:sub(1, -5)
+			local size_file = d .. id .. ".size"
+			local size = love.filesystem.getInfo(size_file) == nil and 12 or tonumber(love.filesystem.read(size_file), 10)
+			fonts[id] = lg.newFont(d .. f, size)
+			fonts[id]:setFilter("nearest", "nearest")
 		end
-	end
+	end)
 
-	dir = directory .. "/Music/"
-	table.clear(dirs)
-	table.insert(dirs, dir)
-
-	for _,d in pairs(dirs) do
-		for _,f in pairs(love.filesystem.getDirectoryItems(d)) do
-			if (table.contains(soundext, f:sub(-4))) then
-				local id = f:sub(1, -5)
-				sounds[id] = love.audio.newSource(d .. f, "stream")
-			elseif not (f:find("\\.")) then
-				table.insert(dirs, d .. f .. "/")
-			end
+	forAllFilesIn(directory .. "/Sounds/", function(d, f)
+		if (table.contains(soundext, f:sub(-4))) then
+			sounds[f:sub(1, -5)] = love.audio.newSource(d .. f, "static")
 		end
-	end
+	end)
+
+	forAllFilesIn(directory .. "/Music/", function(d, f)
+		if (table.contains(soundext, f:sub(-4))) then
+			sounds[f:sub(1, -5)] = love.audio.newSource(d .. f, "stream")
+		end
+	end)
+
+	forAllFilesIn(directory .. "/Voices/", function(d, f)
+		if (table.contains(soundext, f:sub(-4))) then
+			sounds["voice_" .. f:sub(1, -5)] = love.audio.newSource(d .. f, "static")
+		end
+	end)
 end
 
 local function loadAllMods()
@@ -117,10 +102,10 @@ local function loadCurrentMod()
 end
 
 function unloadCurrentMod()
+	Audio.StopAll()
 	table.clear(sprites)
 	table.clear(fonts)
 	table.clear(sounds)
-	Audio.StopAll()
 	loadAllMods()
 	for k,v in pairs(package.loaded) do
 		if k:sub(1, 6) == "Engine" and not table.contains(noreload, k:sub(16)) then
@@ -161,10 +146,10 @@ end
 
 function love.load()
 	love.window.setMode(640, 480)
+	love.window.setTitle("LVup Your Frisk!")
 	sprites = {}
 	fonts = {}
 	sounds = {}
-	love.keyboard.setKeyRepeat(true)
 	loadResourcesFromDirectory("Default/")
 end
 
@@ -175,22 +160,22 @@ end
 function love.update(dt)
 	Input.update(dt)
 	Time.update(dt)
-	if menu == "main" and Input.GetKey("return") == 1 then
+	if menu == "main" and Input.IsDown("return") then
 		loadAllMods()
 	elseif (menu == "mods") then
-		if Input.GetKey(Input.Confirm) == 1 then
+		if Input.IsDown(Input.Confirm) then
 			loadCurrentMod()
-		elseif Input.GetKey("escape") == 1 then
+		elseif Input.IsDown("escape") then
 			unloadAllMods()
-		elseif Input.GetKey("right") == 1 then
+		elseif Input.IsDown("right") then
 			mod = mod + 1
-		elseif Input.GetKey("left") == 1 then
+		elseif Input.IsDown("left") then
 			mod = mod - 1
 		end
 		mod = math.clamp(mod, 1, #mods, true)
 	elseif (menu == "none") then
 		Engine.updateEngine(dt)
-		if (Input.GetKey("escape") == 1 and not Encounter.unescape) then
+		if (Input.IsDown("escape") and not Encounter.unescape) then
 			unloadCurrentMod()
 		end
 	end
@@ -204,8 +189,8 @@ function string:split(sep)
 end
 
 function table.indexof(t, e)
-	for i=1,#t do
-		if (t[i] == e) then
+	for _,v in pairs(t) do
+		if (v == e) then
 			return i
 		end
 	end
@@ -213,8 +198,8 @@ function table.indexof(t, e)
 end
 
 function table.contains(t, e)
-	for i=1,#t do
-		if (t[i] == e) then
+	for _,v in pairs(t) do
+		if (v == e) then
 			return true
 		end
 	end
@@ -222,19 +207,16 @@ function table.contains(t, e)
 end
 
 function table.clear(t)
-	for i=1,#t do
-		t[i] = nil
+	for k in pairs(t) do
+		t[k] = nil
 	end
 end
 
-function math.clamp(value, min, max, recur)
-	if (value > max) then
-		return recur and min or max
-	elseif (value < min) then
-		return recur and max or min
-	else
-		return value
+function math.clamp(v, min, max, recur)
+	if not (recur) then
+		return math.max(min, math.min(v, max))
 	end
+	return (v > max) and min or (v < min and max or v)
 end
 
 function math.lerp(a, b, t)

@@ -11,17 +11,6 @@ return (function()
 	self.current = 1
 	self.page = 1
 
-	function self.Start()
-		if (#self.items > 0) then
-			State("ITEMMENU")
-			BattleDialog("")
-			self.current = 1
-			self.page = 1
-			self.drawPage()
-			SelectChoice(1)
-		end
-	end
-
 	local function defaultCallback(name, t)
 		if (t == 0) then
 			return function()
@@ -42,6 +31,43 @@ return (function()
 		end
 	end
 
+	function self.AddItem(name, t, callback, index)
+		local _item = {}
+		_item.name = name or ""
+		_item.type = t or 0
+		-- 0 is consumable, 1 is weapon, 2 is armor, 3+ is not deleted
+		_item.onuse = callback or defaultCallback(name, _item.type)
+			
+		if (index) then
+			table.insert(self.items, index, _item)
+		else
+			table.insert(self.items, _item)
+		end
+	end
+
+	function self.RemoveItem(index)
+		table.remove(self.items, index)
+	end
+
+	function self.GetItem(index)
+		return self.items[index]
+	end
+
+	function self.UseItem(index)
+		self.GetItem(index).onuse()
+	end
+
+	function self.SetItem(item, index)
+		self.items[index] = item
+	end
+
+	function self.AddItems(items)
+		for i=1,#items do
+			local a = items[i]
+			self.AddItem(a[1], a[2], a[3], a[4])
+		end
+	end
+
 	function self.SetStat(amount)
 		local item = self.GetItem(current)
 		if (item.type == 1) then
@@ -53,37 +79,19 @@ return (function()
 		end
 	end
 
-	function self.AddItem(name, t, callback, index)
-		local _item = {}
-		_item.name = name or ""
-		_item.type = t or 0
-		-- 0 is consumable, 1 is weapon, 2 is armor, 3 is not deleted
-		_item.onuse = callback or defaultCallback(name, _item.type)
-			
-		if (index) then
-			table.insert(self.items, index, _item)
-		else
-			table.insert(self.items, _item)
-		end
-	end
-
-	function self.GetItem(index)
-		return self.items[index]
-	end
-
-	function self.UseItem(index)
-		self.GetItem(index).onuse()
-	end
-
-	function self.AddItems(items)
-		for i=1,#items do
-			local a = items[i]
-			self.AddItem(a[1], a[2], a[3], a[4])
+	function self.Start()
+		if (#self.items > 0) then
+			State("ITEMMENU")
+			BattleDialog("")
+			self.current = 1
+			self.page = 1
+			self.drawPage()
+			SelectChoice(1)
 		end
 	end
 
 	function self.updateKey()
-		if (Input.GetKey(Input.Confirm) == 1) then
+		if Input.IsDown(Input.Confirm) then
 			Audio.PlaySound("confirm")
 			self.resetPage()
 			self.UseItem(self.current)
@@ -92,13 +100,13 @@ return (function()
 			end
 			self.current = 1
 			return
-		elseif Input.GetKey("left") == 1 then
+		elseif Input.IsDown("left") then
 			self.current = self.current - 1
-		elseif Input.GetKey("right") == 1 then
+		elseif Input.IsDown("right") then
 			self.current = self.current + 1
-		elseif Input.GetKey("up") == 1 then
+		elseif Input.IsDown("up") then
 			self.current = self.current - 2
-		elseif Input.GetKey("down") == 1 then
+		elseif Input.IsDown("down") then
 			self.current = self.current + 2
 		end
 		self.current = math.clamp(self.current, 1, #self.items)

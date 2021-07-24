@@ -12,13 +12,14 @@ return (function()
 		UI.load()
 		BattleDialog(Encounter.encountertext)
 		State("MENUBATTLE")
-		Audio.PlayMusic(Encounter.music, true)
+		--Audio.PlayMusic(Encounter.music, true)
 		Encounter.EncounterStarting()
 	end
 
 	function self.drawEngine()
-		Sprites.draw()
 		--TODO: add layers: layers can be called in order, bottom being called first and top being called last
+		Sprites.draw()
+		
 		Texts.draw()
 		Arena.draw()
 		Player.draw()
@@ -34,7 +35,7 @@ return (function()
 		elseif (GetCurrentState() == "FIGHTMENU" or GetCurrentState() == "ATTACKING") then
 			Fight.updateKey()
 		elseif (GetCurrentState() == "ENEMYDIALOGUE") then
-			if Input.GetKey(Input.Confirm) == 1 then
+			if Input.IsDown(Input.Confirm) then
 				for i=1,#enemyDialogues do
 					if not (enemyDialogues[i].ended) then
 						UI.SetCurrentText(enemyDialogues[i])
@@ -46,7 +47,7 @@ return (function()
 			end
 		end
 
-		if (Input.GetKey(Input.Cancel)) == 1 then
+		if Input.IsDown(Input.Cancel) then
 			if (GetCurrentState():sub(-4) == "MENU") then
 				if (GetCurrentState() == "MERCYMENU") then
 					Mercy.resetPage()
@@ -76,6 +77,12 @@ return (function()
 
 	function self.updateEngine(dt)
 		checkKeyInput()
+		UI.update(dt)
+		Audio.update(dt)
+		Texts.update(dt)
+		Sprites.update(dt)
+		Arena.update(dt)
+		Encounter.Update(dt)
 		if (GetCurrentState() == "MENUBATTLE") then
 			Player.sprite.alpha = 1
 		elseif (GetCurrentState() == "BATTLEDIALOG") then
@@ -87,12 +94,6 @@ return (function()
 		elseif (GetCurrentState() == "DONE") then
 			unloadCurrentMod()
 		end
-		UI.update(dt)
-		Audio.update(dt)
-		Texts.update(dt)
-		Sprites.update(dt)
-		Arena.update(dt)
-		Encounter.Update(dt)
 	end
 
 	function SetAction(button)

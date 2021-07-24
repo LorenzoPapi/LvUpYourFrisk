@@ -10,7 +10,7 @@ return (function()
 
 	function self.update(dt)
 		self.dt = dt
-		self.mult = dt * 60 
+		self.mult = dt * 60
 		self.frameCount = self.frameCount + 1
 		timer = timer + dt
 		if (timer >= 1) then

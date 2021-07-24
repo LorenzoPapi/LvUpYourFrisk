@@ -26,6 +26,10 @@ return (function()
 		end
 	end
 
+	function self.PlayVoice(file, loop, volume)
+		Play("voice_" .. file, "sound", loop, volume)
+	end
+
 	function self.PlaySound(file, loop, volume)
 		Play(file, "sound", loop, volume)
 	end
@@ -52,6 +56,10 @@ return (function()
 
 	function self.Stop(file)
 		sounds[file]:stop()
+	end
+
+	function self.StopVoice(file)
+		self.Stop("voice_" .. file)
 	end
 
 	function self.Pause(file)

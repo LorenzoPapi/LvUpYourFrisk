@@ -66,15 +66,15 @@ return (function()
 
 	function self.updateKey()
 		if (GetCurrentState() == "MENUBATTLE") then
-			if Input.GetKey("left") == 1 then
+			if Input.IsDown("left") then
 				SetAction(action - 1)
-			elseif Input.GetKey("right") == 1 then
+			elseif Input.IsDown("right") then
 				SetAction(action + 1)
-			elseif Input.GetKey(Input.Confirm) == 1 then
+			elseif Input.IsDown(Input.Confirm) then
 				self.buttons[action].onclick()
 				Audio.PlaySound("confirm")
 			end
-		elseif (GetCurrentState() == "BATTLEDIALOG" and bdialog.ended and Input.GetKey(Input.Confirm) == 1) then
+		elseif (GetCurrentState() == "BATTLEDIALOG" and bdialog.ended and Input.IsDown(Input.Confirm)) then
 			State("ENEMYDIALOGUE")
 		end
 	end
@@ -131,6 +131,7 @@ return (function()
 			bdialog.SetText(insert, "uidialog")
 		else
 			bdialog = CreateText(insert, "uidialog", 53, 269)
+			bdialog.SetVoice("uifont")
 		end
 		self.SetCurrentText(bdialog)
 		State("BATTLEDIALOG")

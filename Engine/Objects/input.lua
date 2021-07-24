@@ -49,6 +49,11 @@ return (function()
 		return GetState(key)
 	end
 
+	-- returns wheter key is just pressed 
+	function self.IsDown(key)
+		return self.GetKey(key) == 1
+	end
+
 	function self.update(dt)
 		self.MousePosX, self.MousePosY = love.mouse.getPosition()
 	end
