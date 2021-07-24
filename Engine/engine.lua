@@ -24,37 +24,17 @@ return (function()
 		Player.draw()
 	end
 
-	function self.updateEngine(dt)
-		UI.update(dt)
-		Audio.update(dt)
-		if (GetCurrentState() == "MENUBATTLE") then
-			Player.sprite.alpha = 1
-		elseif (GetCurrentState() == "BATTLEDIALOG") then
-			Player.sprite.alpha = 0
-		elseif (GetCurrentState() == "ATTACKING") then
-			Fight.update(dt)
-		elseif (GetCurrentState() == "DEFENDING") then
-			Player.update()
-		elseif (GetCurrentState() == "DONE") then
-			unloadCurrentMod()
-		end
-		Texts.update(dt)
-		Sprites.update(dt)
-		Arena.update(dt)
-		Encounter.Update(dt)
-	end
-
-	function self.keypressed(key, scancode, isrepeat)
+	local function checkKeyInput()
 		if (GetCurrentState() == "ITEMMENU") then
-			Inventory.keypressed(key)
+			Inventory.updateKey()
 		elseif (GetCurrentState() == "ACTMENU" or GetCurrentState() == "ACTING") then
-			Act.keypressed(key)
+			Act.updateKey()
 		elseif (GetCurrentState() == "MERCYMENU") then
-			Mercy.keypressed(key)
+			Mercy.updateKey()
 		elseif (GetCurrentState() == "FIGHTMENU" or GetCurrentState() == "ATTACKING") then
-			Fight.keypressed(key)
+			Fight.updateKey()
 		elseif (GetCurrentState() == "ENEMYDIALOGUE") then
-			if Input.equals(key, "Confirm") then
+			if Input.GetKey(Input.Confirm) == 1 then
 				for i=1,#enemyDialogues do
 					if not (enemyDialogues[i].ended) then
 						UI.SetCurrentText(enemyDialogues[i])
@@ -66,7 +46,7 @@ return (function()
 			end
 		end
 
-		if (Input.equals(key, "Cancel")) then
+		if (Input.GetKey(Input.Cancel)) == 1 then
 			if (GetCurrentState():sub(-4) == "MENU") then
 				if (GetCurrentState() == "MERCYMENU") then
 					Mercy.resetPage()
@@ -91,7 +71,28 @@ return (function()
 			 	UI.EndText()
 			end
 		end
-		UI.keypressed(key)
+		UI.updateKey()
+	end
+
+	function self.updateEngine(dt)
+		checkKeyInput()
+		if (GetCurrentState() == "MENUBATTLE") then
+			Player.sprite.alpha = 1
+		elseif (GetCurrentState() == "BATTLEDIALOG") then
+			Player.sprite.alpha = 0
+		elseif (GetCurrentState() == "ATTACKING") then
+			Fight.update(dt)
+		elseif (GetCurrentState() == "DEFENDING") then
+			Player.update()
+		elseif (GetCurrentState() == "DONE") then
+			unloadCurrentMod()
+		end
+		UI.update(dt)
+		Audio.update(dt)
+		Texts.update(dt)
+		Sprites.update(dt)
+		Arena.update(dt)
+		Encounter.Update(dt)
 	end
 
 	function SetAction(button)

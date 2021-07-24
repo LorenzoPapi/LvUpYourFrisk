@@ -64,21 +64,17 @@ return (function()
 		end
 	end
 
-	function self.keypressed(key)
+	function self.updateKey()
 		if (GetCurrentState() == "MENUBATTLE") then
-			local b = action
-			if Input.equals(key, "Right") then
-				b = b + 1
-			elseif Input.equals(key, "Left") then
-				b = b - 1
-			end
-			SetAction(b)
-
-			if Input.equals(key, "Confirm") then
+			if Input.GetKey("left") == 1 then
+				SetAction(action - 1)
+			elseif Input.GetKey("right") == 1 then
+				SetAction(action + 1)
+			elseif Input.GetKey(Input.Confirm) == 1 then
 				self.buttons[action].onclick()
 				Audio.PlaySound("confirm")
 			end
-		elseif (GetCurrentState() == "BATTLEDIALOG" and bdialog.ended and Input.equals(key, "Confirm")) then
+		elseif (GetCurrentState() == "BATTLEDIALOG" and bdialog.ended and Input.GetKey(Input.Confirm) == 1) then
 			State("ENEMYDIALOGUE")
 		end
 	end

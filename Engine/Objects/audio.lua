@@ -73,24 +73,24 @@ return (function()
 	end
 
 	function self.StopAll()
-		for _,v in pairs(sounds) do
-			if (v:isPlaying()) then
+		for v in pairs(sounds) do
+			if not self.NotPlaying(v) then
 				self.Stop(v)
 			end
 		end
 	end
 
 	function self.PauseAll()
-		for _,v in pairs(sounds) do
-			if (v:isPlaying()) then
+		for v in pairs(sounds) do
+			if not self.NotPlaying(v) then
 				self.Pause(v)
 			end
 		end
 	end
 
 	function self.UnpauseAll()
-		for _,v in pairs(paused) do
-			if (v:isPlaying()) then
+		for v in pairs(paused) do
+			if not self.NotPlaying(v) then
 				self.Unpause(v)
 			end
 		end

@@ -22,8 +22,8 @@ return (function()
 		self.drawPage()
 	end
 
-	function self.keypressed(k)
-		if (Input.equals(k, "Confirm")) then
+	function self.updateKey()
+		if (Input.GetKey(Input.Confirm) == 1) then
 			if (GetCurrentState() == "FIGHTMENU") then
 				Audio.PlaySound("confirm")
 				self.resetPage()
@@ -34,13 +34,13 @@ return (function()
 				hit = true
 			end
 			return
-		elseif (k == "left") then
+		elseif Input.GetKey("left") == 1 then
 			self.current = self.current - 1
-		elseif (k == "right") then
+		elseif Input.GetKey("right") == 1 then
 			self.current = self.current + 1
-		elseif (k == "up") then
+		elseif Input.GetKey("up") == 1 then
 			self.current = self.current - 2
-		elseif (k == "down") then
+		elseif Input.GetKey("down") == 1 then
 			self.current = self.current + 2
 		end
 		self.current = math.clamp(self.current, 1, #Encounter.enemies)

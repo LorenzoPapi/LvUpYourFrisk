@@ -5,6 +5,7 @@ local mod = 1
 local mods = {}
 local previews = {}
 local soundext = {".wav", ".mp3", ".ogg"}
+local noreload = {"input", "time"}
 
 local function loadResourcesFromDirectory(directory)
 	local dir = directory .. "/Sprites/"
@@ -122,7 +123,7 @@ function unloadCurrentMod()
 	Audio.StopAll()
 	loadAllMods()
 	for k,v in pairs(package.loaded) do
-		if (k:sub(1, 6) == "Engine") then
+		if k:sub(1, 6) == "Engine" and not table.contains(noreload, k:sub(16)) then
 			package.loaded[k] = nil
 		end
 	end
@@ -163,34 +164,35 @@ function love.load()
 	sprites = {}
 	fonts = {}
 	sounds = {}
+	love.keyboard.setKeyRepeat(true)
 	loadResourcesFromDirectory("Default/")
 end
 
-function love.keypressed(key, scancode, isrepeat)
-	if menu == "main" and Input.equals(key, "Confirm") then
+function love.keyreleased(key, scancode)
+	Input.keyreleased(key, scancode)
+end
+
+function love.update(dt)
+	Input.update(dt)
+	Time.update(dt)
+	if menu == "main" and Input.GetKey("return") == 1 then
 		loadAllMods()
 	elseif (menu == "mods") then
-		if (Input.equals(key, "Confirm")) then
+		if Input.GetKey(Input.Confirm) == 1 then
 			loadCurrentMod()
-		elseif key == "escape" then
+		elseif Input.GetKey("escape") == 1 then
 			unloadAllMods()
-		elseif key == "right" then
+		elseif Input.GetKey("right") == 1 then
 			mod = mod + 1
-		elseif key == "left" then
+		elseif Input.GetKey("left") == 1 then
 			mod = mod - 1
 		end
 		mod = math.clamp(mod, 1, #mods, true)
 	elseif (menu == "none") then
-		if (key == "escape" and not Encounter.unescape) then
+		Engine.updateEngine(dt)
+		if (Input.GetKey("escape") == 1 and not Encounter.unescape) then
 			unloadCurrentMod()
 		end
-		Engine.keypressed(key, scancode, isrepeat)
-	end
-end
-
-function love.update(dt)
-	if (menu == "none") then
-		Engine.updateEngine(dt)
 	end
 end
 
@@ -207,7 +209,7 @@ function table.indexof(t, e)
 			return i
 		end
 	end
-	return nil
+	return 0
 end
 
 function table.contains(t, e)
@@ -239,27 +241,5 @@ function math.lerp(a, b, t)
 	return (1-t)*a + t*b
 end
 
-Input = {
-	Confirm = 	{"z", "return"},
-	Cancel 	= 	{"x", "lshift"},
-	Up 		=	{"w", "up"},
-	Left 	=	{"a", "left"},
-	Right 	= 	{"s", "right"},
-	Down 	=	{"d", "down"}
-}
-
-function Input.equals(code, typein)
-	for i=1,#Input[typein] do
-		if (code == Input[typein][i]) then
-			return true
-		end	
-	end
-end
-
-function Input.isDown(typein)
-	for i=1,#Input[typein] do
-		if (love.keyboard.isDown(Input[typein][i])) then
-			return true
-		end	
-	end
-end
+Input = require("Engine/Objects/input")
+Time = require("Engine/Objects/time")

@@ -49,8 +49,8 @@ return (function()
 		end
 	end
 
-	function self.keypressed(k)
-		if (Input.equals(k, "Confirm")) then
+	function self.updateKey()
+		if (Input.GetKey(Input.Confirm) == 1) then
 			Audio.PlaySound("confirm")
 			if (GetCurrentState() == "ACTMENU") then
 				self.Reset()
@@ -67,13 +67,13 @@ return (function()
 				self.resetPage()
 			end
 			return
-		elseif (k == "left") then
+		elseif Input.GetKey("left") == 1 then
 			self.current = self.current - 1
-		elseif (k == "right") then
+		elseif Input.GetKey("right") == 1 then
 			self.current = self.current + 1
-		elseif (k == "up") then
+		elseif Input.GetKey("up") == 1 then
 			self.current = self.current - 2
-		elseif (k == "down") then
+		elseif Input.GetKey("down") == 1 then
 			self.current = self.current + 2
 		end
 		self.current = math.clamp(self.current, 1, GetCurrentState() == "ACTMENU" and #Encounter.enemies or #self.acts)

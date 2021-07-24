@@ -33,14 +33,14 @@ return (function()
 		BattleDialog(Encounter.fleetexts[math.random(1, #Encounter.fleetexts)] .. "[w:20] [func:State,DONE]")
 	end
 
-	function self.keypressed(key)
+	function self.updateKey()
 		if (key == "up") then
 			self.choice = 1
 		elseif (key == "down" and Encounter.flee) then
 			self.choice = 3
 		end
 		SelectChoice(self.choice)
-		if (Input.equals(key, "Confirm")) then
+		if Input.GetKey(Input.Confirm) == 1 then
 			Audio.PlaySound("confirm")
 			self.resetPage()
 			if (self.choice == 1) then
