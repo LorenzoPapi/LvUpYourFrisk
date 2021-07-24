@@ -5,7 +5,7 @@ local mod = 1
 local mods = {}
 local previews = {}
 local soundext = {".wav", ".mp3", ".ogg"}
-local noreload = {"input", "time"}
+local noreload = {"input", "time", "misc"}
 
 local function forAllFilesIn(directory, callback)
 	local dirs = {}
@@ -121,6 +121,7 @@ function unloadCurrentMod()
 end
 
 function love.draw()
+	Misc.draw()
 	if menu == "main" then
 		lg.draw(sprites["logo"], 320, 20, 0, 1, 1, sprites["logo"]:getWidth() / 2)
 		lg.setColor(1, 1, 0)
@@ -145,6 +146,9 @@ function love.draw()
 end
 
 function love.load()
+	state, percent, seconds = love.system.getPowerInfo()
+	print(state, percent, seconds)
+	Misc.Load()
 	love.window.setMode(640, 480)
 	love.window.setTitle("LVup Your Frisk!")
 	sprites = {}
@@ -160,6 +164,9 @@ end
 function love.update(dt)
 	Input.update(dt)
 	Time.update(dt)
+	Misc.update(dt)
+	--PRETTY NEAT EFFECT N G L
+	--Misc.MoveCamera(math.sin(Time.frameCount) * 30, math.cos(Time.frameCount) * 30)
 	if menu == "main" and Input.IsDown("return") then
 		loadAllMods()
 	elseif (menu == "mods") then
@@ -225,3 +232,4 @@ end
 
 Input = require("Engine/Objects/input")
 Time = require("Engine/Objects/time")
+Misc = require("Engine/Objects/misc")

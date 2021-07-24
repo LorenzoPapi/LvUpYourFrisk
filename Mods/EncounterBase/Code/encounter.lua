@@ -55,6 +55,7 @@ return (function()
 	end
 
 	function self.Update(dt)
+		Misc.MoveWindow(math.cos(Time.frameCount) * 10, math.sin(Time.frameCount) * 10)
 		if (GetCurrentState() == "ENEMYDIALOGUE" or GetCurrentState() == "DEFENDING") then
 			--Arena.RotateCWBy(love.timer.getDelta() * 100)
 			--Arena.SetColor(love.timer.getTime() * math.random(1, 100))

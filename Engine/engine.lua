@@ -12,14 +12,13 @@ return (function()
 		UI.load()
 		BattleDialog(Encounter.encountertext)
 		State("MENUBATTLE")
-		--Audio.PlayMusic(Encounter.music, true)
+		Audio.PlayMusic(Encounter.music, true)
 		Encounter.EncounterStarting()
 	end
 
 	function self.drawEngine()
 		--TODO: add layers: layers can be called in order, bottom being called first and top being called last
-		Sprites.draw()
-		
+		Sprites.draw()		
 		Texts.draw()
 		Arena.draw()
 		Player.draw()
