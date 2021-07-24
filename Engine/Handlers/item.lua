@@ -84,6 +84,7 @@ return (function()
 
 	function self.keypressed(k)
 		if (Input.equals(k, "Confirm")) then
+			Audio.PlaySound("confirm")
 			self.resetPage()
 			self.UseItem(self.current)
 			if not (self.GetItem(self.current).type == 3) then
@@ -132,12 +133,6 @@ return (function()
 		for i=1,#self.texts do
 			self.texts[i].Remove()
 		end
-	end
-
-	function self.Reset()
-		table.clear(self.items)
-		self.current = 1
-		self.page = 1
 	end
 
 	return self

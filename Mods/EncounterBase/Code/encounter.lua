@@ -1,5 +1,5 @@
 return (function()
-	local self = require("Engine/encounterbase")
+	local self = require("Engine/Defaults/encounterbase")
 
 	--self.enemies = {"Luigi", "Mario", "Peach", "Cherry", "....?", "...", "$!", "OwO", "Hidden!"}
 	self.enemies = {"poseur"}
@@ -23,7 +23,6 @@ return (function()
 	end
 
 	function self.EnemyDialogueStarting()
-		
 	end
 
 	function self.EnemyDialogueEnding()

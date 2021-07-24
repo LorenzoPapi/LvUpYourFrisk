@@ -19,7 +19,7 @@ return (function()
 
 	local bdialog = nil
 	local currenttexts = nil
-	local action = -1
+	local action = 1
 
 	function self.load()
 		self.buttons = {{id="fight", x=32, y=430, px=40, py=445, onclick=onFight},
@@ -41,6 +41,7 @@ return (function()
 		for _,b in ipairs(self.buttons) do
 			self.ui[b.id] = CreateSprite(b.id .. "_" .. 0, b.x, b.y)
 		end
+		SetAction(1)
 	end
 
 	function self.update(dt)
@@ -55,6 +56,9 @@ return (function()
 		if (button == -1) then
 			action = -1
 		else
+			if not (button == action) then
+				Audio.PlaySound("move")
+			end
 			action = math.clamp(button, 1, #self.buttons, true)
 			Player.MoveTo(self.buttons[action].px, self.buttons[action].py)
 		end
@@ -72,6 +76,7 @@ return (function()
 
 			if Input.equals(key, "Confirm") then
 				self.buttons[action].onclick()
+				Audio.PlaySound("confirm")
 			end
 		elseif (GetCurrentState() == "BATTLEDIALOG" and bdialog.ended and Input.equals(key, "Confirm")) then
 			State("ENEMYDIALOGUE")

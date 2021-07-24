@@ -131,9 +131,5 @@ return (function()
 		end
 	end
 
-	function self.Reset()
-		table.clear(self.sprites)
-	end
-
 	return self
 end)()

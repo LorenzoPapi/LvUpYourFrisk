@@ -41,6 +41,7 @@ return (function()
 		end
 		SelectChoice(self.choice)
 		if (Input.equals(key, "Confirm")) then
+			Audio.PlaySound("confirm")
 			self.resetPage()
 			if (self.choice == 1) then
 				Encounter.HandleSpare()

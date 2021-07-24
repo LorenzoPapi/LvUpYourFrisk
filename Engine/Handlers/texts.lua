@@ -104,7 +104,6 @@ return (function()
 		function _text.update(dt)
 			if not (_text.ended) then
 				for k,v in pairs(textcommands) do
-					print(char, k, v)
 					if (char == v) then
 						textcommands[k] = nil
 						cmdnumber = cmdnumber - 1
@@ -172,12 +171,6 @@ return (function()
 			end
 		end
 	end
-
-	function self.Reset()
-		table.clear(self.texts)
-	end
-
-
-
+	
 	return self
 end)()

@@ -6,13 +6,13 @@ return (function()
 	local enemyDialogues = {}
 
 	function self.loadEngine()
-		UI.load()
 		Arena.Rectangle(35, 253, 605, 387)
 		Arena.load()
 		Player.load()
+		UI.load()
 		BattleDialog(Encounter.encountertext)
 		State("MENUBATTLE")
-		SetAction(1)
+		Audio.PlayMusic(Encounter.music, true)
 		Encounter.EncounterStarting()
 	end
 
@@ -26,6 +26,7 @@ return (function()
 
 	function self.updateEngine(dt)
 		UI.update(dt)
+		Audio.update(dt)
 		if (GetCurrentState() == "MENUBATTLE") then
 			Player.sprite.alpha = 1
 		elseif (GetCurrentState() == "BATTLEDIALOG") then
@@ -41,16 +42,6 @@ return (function()
 		Sprites.update(dt)
 		Arena.update(dt)
 		Encounter.Update(dt)
-	end
-
-	function self.unloadEngine()
-		table.clear(sprites)
-		table.clear(fonts)
-		-- Sprites.Reset()
-		-- Texts.Reset()
-		-- Inventory.Reset()
-		-- Act.Reset()
-		loadResourcesFromDirectory("Default/")
 	end
 
 	function self.keypressed(key, scancode, isrepeat)

@@ -51,6 +51,7 @@ return (function()
 
 	function self.keypressed(k)
 		if (Input.equals(k, "Confirm")) then
+			Audio.PlaySound("confirm")
 			if (GetCurrentState() == "ACTMENU") then
 				self.Reset()
 				State("ACTING")

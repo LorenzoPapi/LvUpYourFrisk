@@ -13,9 +13,9 @@ return (function()
 	self.fleetexts = {"You escaped the fight.", "I've better things to do...", "Stop bothering me.", "I'm outta here."}
 	self.unescape = false
 	self.fightarena = {}
+	self.music = "mus_battle1"
 	
 	--NYI
-	self.music = ""
 	self.nextwaves = {}
 	self.wavetimer = 4.0
 	self.enemypositions = {}

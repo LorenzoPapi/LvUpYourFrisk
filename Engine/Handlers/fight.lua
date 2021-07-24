@@ -25,6 +25,7 @@ return (function()
 	function self.keypressed(k)
 		if (Input.equals(k, "Confirm")) then
 			if (GetCurrentState() == "FIGHTMENU") then
+				Audio.PlaySound("confirm")
 				self.resetPage()
 				self.current = 1
 				State("ATTACKING")
