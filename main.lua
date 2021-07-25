@@ -6,6 +6,7 @@ local mods = {}
 local previews = {}
 local soundext = {".wav", ".mp3", ".ogg"}
 local noreload = {"input", "time", "misc"}
+local forbidden = {"os", "io"}
 
 local function forAllFilesIn(directory, callback)
 	local dirs = {}
@@ -13,7 +14,7 @@ local function forAllFilesIn(directory, callback)
 	for _,d in pairs(dirs) do
 		for _,f in pairs(love.filesystem.getDirectoryItems(d)) do
 			callback(d, f)
-			if not (f:find("\\.")) then
+			if love.filesystem.getInfo(d..f, "directory") then
 				table.insert(dirs, d .. f .. "/")
 			end
 		end
@@ -58,9 +59,9 @@ end
 
 local function loadAllMods()
 	for i,f in pairs(love.filesystem.getDirectoryItems("Mods")) do
-		if not (f:find("\\.")) then
+		if love.filesystem.getInfo("Mods/" .. f, "directory") then
 			table.insert(mods, f)
-			if not (love.filesystem.getInfo("Mods/" .. f .. "/Assets/preview.png") == nil) then
+			if Misc.FileExists("Mods/" .. f .. "/Assets/preview.png") then
 				previews[i] = lg.newImage("Mods/" .. f .. "/Assets/preview.png")
 			end
 		end
@@ -96,6 +97,7 @@ local function loadCurrentMod()
 	end
 	loadResourcesFromDirectory("Default")
 	loadResourcesFromDirectory(dir .. "/Assets")
+	Misc.setModDirectory(dir)
 	unloadAllMods()
 	Engine.loadEngine()
 	menu = "none"
@@ -146,8 +148,7 @@ function love.draw()
 end
 
 function love.load()
-	state, percent, seconds = love.system.getPowerInfo()
-	print(state, percent, seconds)
+	print(love.system.getPowerInfo())
 	Misc.Load()
 	love.window.setMode(640, 480)
 	love.window.setTitle("LVup Your Frisk!")
@@ -165,8 +166,6 @@ function love.update(dt)
 	Input.update(dt)
 	Time.update(dt)
 	Misc.update(dt)
-	--PRETTY NEAT EFFECT N G L
-	--Misc.MoveCamera(math.sin(Time.frameCount) * 30, math.cos(Time.frameCount) * 30)
 	if menu == "main" and Input.IsDown("return") then
 		loadAllMods()
 	elseif (menu == "mods") then
@@ -228,6 +227,15 @@ end
 
 function math.lerp(a, b, t)
 	return (1-t)*a + t*b
+end
+
+local _require = require
+function require(name)
+	if not table.contains(forbidden, name) then
+		return _require(name)
+	else
+		error("\nTrying to require a forbidden package?\nMistake or made on purpose?\nCaught in 4k.")
+	end
 end
 
 Input = require("Engine/Objects/input")

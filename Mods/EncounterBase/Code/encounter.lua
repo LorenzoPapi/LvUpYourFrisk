@@ -18,6 +18,13 @@ return (function()
 		Inventory.AddItem("<ERROR>", 3)
 		Inventory.AddItem("INITIO", 3)
 		Inventory.AddItem("FINAL FINALIS", 3)
+		local file = Misc.OpenFile("README.md")
+		file.Write("First line\nSecond line\n\nForth Line")
+		file.ReplaceLine(3, "Third??")
+		file.Copy("README.bak", true)
+		file.Write("REPLACED!")
+		file.Move("moved.bak")
+		file.Write("MOVED!")
 		--Arena.Regular(-130, 320, 240, 16)
 		--Arena.Polygon({35, 253, 35, 387, 605, 387, 605, 200, 300, 200, 400, 300}, true)
 	end
@@ -55,7 +62,7 @@ return (function()
 	end
 
 	function self.Update(dt)
-		Misc.MoveWindow(math.cos(Time.frameCount) * 10, math.sin(Time.frameCount) * 10)
+		--Misc.MoveWindow(math.cos(Time.frameCount) * 10, math.sin(Time.frameCount) * 10)
 		if (GetCurrentState() == "ENEMYDIALOGUE" or GetCurrentState() == "DEFENDING") then
 			--Arena.RotateCWBy(love.timer.getDelta() * 100)
 			--Arena.SetColor(love.timer.getTime() * math.random(1, 100))
