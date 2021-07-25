@@ -4,10 +4,9 @@ return (function()
 	
 	local self = {}
 
-	local epoch = os.time()
 	local presence = {
 		details = "Title Screen",
-		startTimestamp = epoch,
+		startTimestamp = os.time(),
 		largeImageKey = "rpc",
 		largeImageText = "LVupYourFrisk"
 	}
@@ -21,16 +20,12 @@ return (function()
 	})
 	discordRPC.updatePresence(_p)
 
-	local function currentTime()
-		return os.time() - epoch
-	end
-
 	function self.SetTitle(s)
 		presence.details = s
 	end
 
 	function self.ClearTitle(reset)
-		presence.details = reset and "" or "Playing Mod: " .. modName
+		self.SetTitle(reset and "" or "Playing Mod: " .. modName)
 	end
 
 	function self.SetSubtitle(s)
@@ -38,26 +33,16 @@ return (function()
 	end
 
 	function self.ClearSubtitle(reset)
-		presence.state = reset and "" or "encounter"
+		self.SetSubtitle(reset and "" or "encounter")
 	end
 
 	function self.SetTime(time, countdown)
-		if countdown then
-			presence.endTimestamp = currentTime() + time
-			presence.startTimestamp = 0
-		else
-			presence.startTimestamp = currentTime() - time
-			presence.endTimestamp = 0
-		end
+		presence.endTimestamp = countdown and os.time() + time or 0
+		presence.startTimestamp = countdown and os.time() or os.time() - time
 	end
 
 	function self.ClearTime(reset)
-		if reset then
-			presence.startTimestamp = 0
-			presence.endTimestamp = 0
-		else
-			presence.startTimestamp = os.time()
-		end
+		self.SetTime(reset and os.time() or 0)
 	end
 
 	function love.quit()

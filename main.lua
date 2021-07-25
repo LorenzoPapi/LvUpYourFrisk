@@ -68,7 +68,7 @@ local function loadAllMods()
 		end
 	end
 	Discord.SetTitle("Selecting a mod")
-	Discord.SetSubtitle("")
+	Discord.ClearSubtitle(true)
 	Discord.ClearTime()
 	menu = "mods"
 end
@@ -103,10 +103,10 @@ local function loadCurrentMod()
 	loadResourcesFromDirectory("Default")
 	loadResourcesFromDirectory(dir .. "/Assets")
 	Misc.setModDirectory(dir)
-	Engine.loadEngine()
 	Discord.SetTitle("Playing Mod: " .. modName)
 	Discord.SetSubtitle("encounter")
 	Discord.ClearTime()
+	Engine.loadEngine()
 	menu = "none"
 end
 
