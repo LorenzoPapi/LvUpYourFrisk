@@ -4,9 +4,10 @@ local menu = "main"
 local mod = 1
 local mods = {}
 local previews = {}
+local modName = ""
 local soundext = {".wav", ".mp3", ".ogg"}
-local noreload = {"input", "time", "misc"}
-local forbidden = {"os", "io"}
+local noreload = {"input", "time", "misc", "discord"}
+local forbidden = {"os", "io", "debug"}
 
 local function forAllFilesIn(directory, callback)
 	local dirs = {}
@@ -66,6 +67,9 @@ local function loadAllMods()
 			end
 		end
 	end
+	Discord.SetTitle("Selecting a mod")
+	Discord.SetSubtitle("")
+	Discord.ClearTime()
 	menu = "mods"
 end
 
@@ -88,8 +92,9 @@ local function loadCurrentMod()
 	Act = require("Engine/Handlers/act")
 	Fight = require("Engine/Handlers/fight")
 	UI = require("Engine/Handlers/ui")
-
-	local dir = "Mods/" .. mods[mod]
+	modName = mods[mod]
+	unloadAllMods()
+	local dir = "Mods/" .. modName
 	Encounter = require(dir .. "/Code/encounter")
 	for k,v in ipairs(Encounter.enemies) do
 		Encounter.enemies[k] = require(dir .. "/Code/Monsters/" .. v)
@@ -98,8 +103,10 @@ local function loadCurrentMod()
 	loadResourcesFromDirectory("Default")
 	loadResourcesFromDirectory(dir .. "/Assets")
 	Misc.setModDirectory(dir)
-	unloadAllMods()
 	Engine.loadEngine()
+	Discord.SetTitle("Playing Mod: " .. modName)
+	Discord.SetSubtitle("encounter")
+	Discord.ClearTime()
 	menu = "none"
 end
 
@@ -114,12 +121,13 @@ function unloadCurrentMod()
 			package.loaded[k] = nil
 		end
 	end
-	package.loaded["Mods/" .. mods[mod] .. "/Code/encounter"] = nil
+	package.loaded["Mods/" .. modName .. "/Code/encounter"] = nil
 	for k,v in ipairs(Encounter.enemies) do
 		Encounter.enemies[k] = v.scriptName
-		package.loaded["Mods/"  .. mods[mod] .. "/Code/Monsters/" .. v.scriptName] = nil
+		package.loaded["Mods/"  .. modName .. "/Code/Monsters/" .. v.scriptName] = nil
 	end
 	loadResourcesFromDirectory("Default/")
+	modName = ""
 end
 
 function love.draw()
@@ -149,7 +157,6 @@ end
 
 function love.load()
 	print(love.system.getPowerInfo())
-	Misc.Load()
 	love.window.setMode(640, 480)
 	love.window.setTitle("LVup Your Frisk!")
 	sprites = {}
@@ -163,6 +170,7 @@ function love.keyreleased(key, scancode)
 end
 
 function love.update(dt)
+	Discord.update(dt)
 	Input.update(dt)
 	Time.update(dt)
 	Misc.update(dt)
@@ -172,6 +180,8 @@ function love.update(dt)
 		if Input.IsDown(Input.Confirm) then
 			loadCurrentMod()
 		elseif Input.IsDown("escape") then
+			Discord.SetTitle("Title Screen")
+			Discord.ClearTime()
 			unloadAllMods()
 		elseif Input.IsDown("right") then
 			mod = mod + 1
@@ -189,9 +199,9 @@ end
 
 function string:split(sep)
 	local sep, fields = sep or ":", {}
-   	local pattern = string.format("([^%s]+)", sep)
-   	self:gsub(pattern, function(c) fields[#fields+1] = c end)
-   	return fields
+	local pattern = string.format("([^%s]+)", sep)
+	self:gsub(pattern, function(c) fields[#fields+1] = c end)
+	return fields
 end
 
 function table.indexof(t, e)
@@ -238,6 +248,15 @@ function require(name)
 	end
 end
 
+function getfenv(f)
+	error("\nTrying to get environment for something?\nMistake or made on purpose?\nCaught in 4k.")
+end
+
+function setfenv(f, t)
+	error("\nTrying to set environment for something?\nMistake or made on purpose?\nCaught in 4k.")
+end
+
 Input = require("Engine/Objects/input")
 Time = require("Engine/Objects/time")
+Discord = require("Engine/Objects/discord")
 Misc = require("Engine/Objects/misc")

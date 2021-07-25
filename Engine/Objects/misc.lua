@@ -42,15 +42,19 @@ return (function()
 		end
 	]])
 
-	function self.Load()
-		if (self.OsType == "Windows") then
-			self.MachineName = os.getenv("USERNAME")
-		else
-			self.MachineName = os.getenv("USER")
-		end
-		os = nil
-		io = nil
+	if (self.OsType == "Windows") then
+		self.MachineName = os.getenv("USERNAME")
+	else
+		self.MachineName = os.getenv("USER")
 	end
+	
+	local time = os.time
+	os = nil
+	io = nil
+	debug = nil
+
+	os = {}
+	os.time = time
 
 	function self.DestroyWindow()
 		love.event.quit()
@@ -125,22 +129,22 @@ return (function()
 	end
 
 	local function recursivelyDelete(item)
-        if love.filesystem.getInfo(item, "directory") then
-           	for _, child in pairs(love.filesystem.getDirectoryItems(item)) do
-               	recursivelyDelete(item .. '/' .. child)
-               	love.filesystem.remove(item .. '/' .. child)
-           	end
+		if love.filesystem.getInfo(item, "directory") then
+			for _, child in pairs(love.filesystem.getDirectoryItems(item)) do
+				recursivelyDelete(item .. '/' .. child)
+				love.filesystem.remove(item .. '/' .. child)
+			end
 
-        elseif love.filesystem.getInfo(item) then
-           	love.filesystem.remove(item)
-        end
-        love			.filesystem.remove(item)
-    end
+		elseif love.filesystem.getInfo(item) then
+			love.filesystem.remove(item)
+		end
+		love			.filesystem.remove(item)
+	end
 
 	function self.RemoveDir(path)
 		local path = cleanAndAssert(path)
 		recursivelyDelete(path)
-    	return not self.DirExists(path)
+		return not self.DirExists(path)
 	end
 
 	function self.OpenFile(path)

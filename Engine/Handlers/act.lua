@@ -102,7 +102,7 @@ return (function()
 			for i=1,4 do
 				local cur = i+4*(self.page-1)
 				if self.GetAct(cur) then
-			    	self.texts[i] = CreateChoice(self.GetAct(cur).name, i)
+					self.texts[i] = CreateChoice(self.GetAct(cur).name, i)
 				end
 			end
 			if (#self.acts > 4) then

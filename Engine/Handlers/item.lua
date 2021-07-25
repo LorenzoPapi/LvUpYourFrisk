@@ -124,7 +124,7 @@ return (function()
 		for i=1,4 do
 			local cur = i+4*(self.page-1)
 			if self.GetItem(cur) then
-			    self.texts[i] = CreateChoice(self.GetItem(cur).name, i)
+				self.texts[i] = CreateChoice(self.GetItem(cur).name, i)
 			end
 		end
 		if (#self.items > 4) then

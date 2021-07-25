@@ -156,8 +156,8 @@ return (function()
 					end
 				end
 				higher0  = higher1
-				vtx0     = vtx1
-				vtx1     = vertices[i]
+				vtx0	 = vtx1
+				vtx1	 = vertices[i]
 			end
 			return inside
 		else
@@ -188,11 +188,11 @@ return (function()
 					s = s + 2
 				end
 			elseif (#gons < #new) then
-			    local s = 1
-			    local old = {}
-			    for i=1,#gons do
-			    	old[i] = gons[i]
-			    end
+				local s = 1
+				local old = {}
+				for i=1,#gons do
+					old[i] = gons[i]
+				end
 				for i=#gons+1,#new,2 do
 					gons[i] = old[s] - 0.01
 					gons[i+1] = old[s+1] - 0.01

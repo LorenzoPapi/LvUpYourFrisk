@@ -68,7 +68,7 @@ return (function()
 				State("ACTMENU")
 				Act.redrawPage()
 			else
-			 	UI.EndText()
+				UI.EndText()
 			end
 		end
 		UI.updateKey()
