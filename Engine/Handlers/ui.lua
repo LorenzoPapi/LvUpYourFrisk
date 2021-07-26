@@ -30,7 +30,7 @@ return (function()
 			bg = CreateSprite("bg", 0, 0),
 			name = CreateText("[instant]" .. Player.name, "uibattlesmall", 32, 402),
 			lv = CreateText("[instant]LV  " .. Player.lv, "uibattlesmall", Player.name:len() > 6 and 193 or 149, 402),
-			hptext = CreateSprite("hp", Player.name:len() > 6 and 316 or 245, 405),
+			hpimage = CreateSprite("hp", Player.name:len() > 6 and 316 or 245, 405),
 			maxhp = CreateSprite("px", Player.name:len() > 6 and 347 or 276, 400, 0, math.min(120, Player.maxhp * 1.2), 20),
 			hp = CreateSprite("px", Player.name:len() > 6 and 347 or 276, 400, 0, math.max(0, Player.hp * 1.2), 20),
 			hptext = CreateText("[instant]" .. Player.hp .. " / " .. Player.maxhp, "uibattlesmall", Player.name:len() > 6 and 385 or 314, 402)
@@ -50,6 +50,8 @@ return (function()
 		end
 		self.ui.maxhp.Scale(math.min(120, Player.maxhp * 1.2), 20)
 		self.ui.hp.Scale(math.max(0, Player.hp * 1.2), 20)
+		self.ui.hptext.SetText("[instant]" .. Player.hp .. " / " .. Player.maxhp)
+		self.ui.hptext.MoveTo(flag and 385 or 314 + self.ui.maxhp.xscale - 24, 402)
 	end
 
 	function self.SetAction(button)
@@ -147,6 +149,16 @@ return (function()
 			y = 300
 		end
 		return CreateText("[instant] " .. insertStar(text), "uidialog", x, y)
+	end
+
+	function self.updatePositions()
+		local flag = Player.name:len() > 6
+		self.ui.name.SetText("[instant]" .. Player.name)
+		self.ui.lv.SetText("[instant]LV  " .. Player.lv)
+		self.ui.lv.MoveTo(flag and 193 or 149, 402)
+		self.ui.hpimage.MoveTo(flag and 316 or 245, 405)
+		self.ui.maxhp.MoveTo(flag and 347 or 276, 400)
+		self.ui.hp.MoveTo(flag and 347 or 276, 400)
 	end
 
 	function self.SetCurrentText(text)

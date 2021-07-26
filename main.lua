@@ -40,19 +40,19 @@ local function loadResourcesFromDirectory(directory)
 	end)
 
 	forAllFilesIn(directory .. "/Sounds/", function(d, f)
-		if (table.contains(soundext, f:sub(-4))) then
+		if (table.containsValue(soundext, f:sub(-4))) then
 			sounds[f:sub(1, -5)] = love.audio.newSource(d .. f, "static")
 		end
 	end)
 
 	forAllFilesIn(directory .. "/Music/", function(d, f)
-		if (table.contains(soundext, f:sub(-4))) then
+		if (table.containsValue(soundext, f:sub(-4))) then
 			sounds[f:sub(1, -5)] = love.audio.newSource(d .. f, "stream")
 		end
 	end)
 
 	forAllFilesIn(directory .. "/Voices/", function(d, f)
-		if (table.contains(soundext, f:sub(-4))) then
+		if (table.containsValue(soundext, f:sub(-4))) then
 			sounds["voice_" .. f:sub(1, -5)] = love.audio.newSource(d .. f, "static")
 		end
 	end)
@@ -62,7 +62,7 @@ local function loadAllMods()
 	for i,f in pairs(love.filesystem.getDirectoryItems("Mods")) do
 		if love.filesystem.getInfo("Mods/" .. f, "directory") then
 			table.insert(mods, f)
-			if Misc.FileExists("Mods/" .. f .. "/Assets/preview.png") then
+			if not (love.filesystem.getInfo("Mods/" .. f .. "/Assets/preview.png", "file") == nil) then
 				previews[i] = lg.newImage("Mods/" .. f .. "/Assets/preview.png")
 			end
 		end
@@ -81,17 +81,18 @@ end
 
 local function loadCurrentMod()
 	--For now, only one encounter per mod.
+	Sprites = require("Engine/Handlers/sprites")
+	Texts = require("Engine/Handlers/texts")
+	Audio = require("Engine/Objects/audio")
+	UI = require("Engine/Handlers/ui")
 	Engine = require("Engine/engine")
+	Fight = require("Engine/Handlers/fight")
+	Act = require("Engine/Handlers/act")
+	Inventory = require("Engine/Handlers/item")	
+	Mercy = require("Engine/Handlers/mercy")
 	Arena = require("Engine/Objects/arena")
 	Player = require("Engine/Objects/player")
-	Audio = require("Engine/Objects/audio")
-	Texts = require("Engine/Handlers/texts")
-	Sprites = require("Engine/Handlers/sprites")
-	Inventory = require("Engine/Handlers/item")
-	Mercy = require("Engine/Handlers/mercy")
-	Act = require("Engine/Handlers/act")
-	Fight = require("Engine/Handlers/fight")
-	UI = require("Engine/Handlers/ui")
+	
 	modName = mods[mod]
 	unloadAllMods()
 	local dir = "Mods/" .. modName
@@ -100,7 +101,6 @@ local function loadCurrentMod()
 		Encounter.enemies[k] = require(dir .. "/Code/Monsters/" .. v)
 		Encounter.enemies[k].scriptName = v
 	end
-	loadResourcesFromDirectory("Default")
 	loadResourcesFromDirectory(dir .. "/Assets")
 	Misc.setModDirectory(dir)
 	Discord.SetTitle("Playing Mod: " .. modName)
@@ -115,9 +115,9 @@ function unloadCurrentMod()
 	table.clear(sprites)
 	table.clear(fonts)
 	table.clear(sounds)
-	loadAllMods()
+	loadResourcesFromDirectory("Default")
 	for k,v in pairs(package.loaded) do
-		if k:sub(1, 6) == "Engine" and not table.contains(noreload, k:sub(16)) then
+		if k:sub(1, 6) == "Engine" and not table.containsValue(noreload, k:sub(16)) then
 			package.loaded[k] = nil
 		end
 	end
@@ -126,8 +126,23 @@ function unloadCurrentMod()
 		Encounter.enemies[k] = v.scriptName
 		package.loaded["Mods/"  .. modName .. "/Code/Monsters/" .. v.scriptName] = nil
 	end
-	loadResourcesFromDirectory("Default/")
+	loadAllMods()
 	modName = ""
+end
+
+function createSpecialTable(t, onaccess)
+	local proxy = t
+	t = {}
+	setmetatable(t, {
+		__index = function(t, k)
+			return proxy[k]
+		end,
+		__newindex = function(t, k, v)
+			proxy[k] = v
+			onaccess(proxy, k, v, t)
+		end
+	})
+	return t
 end
 
 function love.draw()
@@ -140,9 +155,9 @@ function love.draw()
 		lg.printf({{1, 1, 1}, "Press", {1, 0, 0}, " ENTER", {1, 1, 1}, "\nfor mods"}, fonts["uidialog"], 0, 280, lg.getWidth(), "center")
 	elseif (menu == "mods") then
 		lg.translate(-640*(mod-1), 0)
-		for i=1,#previews do
+		for i=1,#mods do
 			local x = 640*(i-1)
-			if not (previews[i] == nil) then
+			if previews[i] then
 				lg.draw(previews[i], x, 0)
 			end
 			lg.setColor(0, 0, 0, 0.7)
@@ -156,13 +171,13 @@ function love.draw()
 end
 
 function love.load()
-	print(love.system.getPowerInfo())
-	love.window.setMode(640, 480)
-	love.window.setTitle("LVup Your Frisk!")
 	sprites = {}
 	fonts = {}
 	sounds = {}
-	loadResourcesFromDirectory("Default/")
+	loadResourcesFromDirectory("Default")
+	print(love.system.getPowerInfo())
+	love.window.setMode(640, 480)
+	love.window.setTitle("LVup Your Frisk!")
 end
 
 function love.keyreleased(key, scancode)
@@ -205,7 +220,7 @@ function string:split(sep)
 end
 
 function table.indexof(t, e)
-	for _,v in pairs(t) do
+	for i,v in pairs(t) do
 		if (v == e) then
 			return i
 		end
@@ -213,9 +228,18 @@ function table.indexof(t, e)
 	return 0
 end
 
-function table.contains(t, e)
+function table.containsValue(t, e)
 	for _,v in pairs(t) do
 		if (v == e) then
+			return true
+		end
+	end
+	return false
+end
+
+function table.containsKey(t, e)
+	for k in pairs(t) do
+		if (k == e) then
 			return true
 		end
 	end
@@ -229,10 +253,10 @@ function table.clear(t)
 end
 
 function math.clamp(v, min, max, recur)
-	if not (recur) then
-		return math.max(min, math.min(v, max))
+	if recur then
+		return (v > max) and min or (v < min and max or v)
 	end
-	return (v > max) and min or (v < min and max or v)
+	return math.max(min, math.min(v, max))
 end
 
 function math.lerp(a, b, t)
@@ -241,7 +265,7 @@ end
 
 local _require = require
 function require(name)
-	if not table.contains(forbidden, name) then
+	if not table.containsValue(forbidden, name) then
 		return _require(name)
 	else
 		error("\nTrying to require a forbidden package?\nMistake or made on purpose?\nCaught in 4k.")
@@ -256,7 +280,7 @@ function setfenv(f, t)
 	error("\nTrying to set environment for something?\nMistake or made on purpose?\nCaught in 4k.")
 end
 
+Discord = require("Engine/Objects/discord")
 Input = require("Engine/Objects/input")
 Time = require("Engine/Objects/time")
-Discord = require("Engine/Objects/discord")
 Misc = require("Engine/Objects/misc")

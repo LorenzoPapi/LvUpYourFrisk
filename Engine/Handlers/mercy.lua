@@ -34,9 +34,9 @@ return (function()
 	end
 
 	function self.updateKey()
-		if (key == "up") then
+		if Input.IsDown("up") then
 			self.choice = 1
-		elseif (key == "down" and Encounter.flee) then
+		elseif Input.IsDown("down") and Encounter.flee then
 			self.choice = 3
 		end
 		SelectChoice(self.choice)

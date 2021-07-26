@@ -36,7 +36,7 @@ return (function()
 						c = content:sub(i, i)
 					end
 					cmd = cmd:sub(2)
-					if ((cmd:find(":")) and table.contains(commands, cmd:split()[1])) or table.contains(commands, cmd) then
+					if ((cmd:find(":")) and table.containsValue(commands, cmd:split()[1])) or table.containsValue(commands, cmd) then
 						t[cmd] = index
 						content = content:gsub("%[" .. cmd .. "%]", "")
 						n = n + 1
@@ -68,7 +68,7 @@ return (function()
 
 		function _text.SetText(text, font)
 			_text.content, cmdnumber = getCommands(splitTableInLines(text), textcommands)
-			_text.font = font
+			_text.font = font or _text.font
 			_text.ended = false
 			char = 1
 			timer = 0
@@ -100,6 +100,15 @@ return (function()
 					obj.End()
 				end
 			end
+		end
+
+		function _text.Move(x, y)
+			_text.MoveTo(_text.x + x, _text.y + y)
+		end
+
+		function _text.MoveTo(x, y)
+			_text.x = x or _text.x
+			_text.y = y or _text.y
 		end
 
 		function _text.SetVoice(voice)

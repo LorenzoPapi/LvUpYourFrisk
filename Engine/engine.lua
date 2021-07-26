@@ -7,8 +7,6 @@ return (function()
 
 	function self.loadEngine()
 		Arena.Rectangle(35, 253, 605, 387)
-		Arena.load()
-		Player.load()
 		UI.load()
 		BattleDialog(Encounter.encountertext)
 		State("MENUBATTLE")
@@ -82,14 +80,13 @@ return (function()
 		Sprites.update(dt)
 		Arena.update(dt)
 		Encounter.Update(dt)
+		Player.update(dt)
 		if (GetCurrentState() == "MENUBATTLE") then
 			Player.sprite.alpha = 1
 		elseif (GetCurrentState() == "BATTLEDIALOG") then
 			Player.sprite.alpha = 0
 		elseif (GetCurrentState() == "ATTACKING") then
 			Fight.update(dt)
-		elseif (GetCurrentState() == "DEFENDING") then
-			Player.update()
 		elseif (GetCurrentState() == "DONE") then
 			unloadCurrentMod()
 		end

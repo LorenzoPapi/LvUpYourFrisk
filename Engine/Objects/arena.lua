@@ -2,17 +2,13 @@ return (function()
 	local self = {}
 
 	local circle = false
+	local rx, ry, cx, cy, nsides = 0, 0, 0, 0, 1000
 
 	local original = {}
 	local gons = {}
 	local resized = {}
 	local vertices = {}
 
-	local rx = 0
-	local ry = 0
-	local cx = 0
-	local cy = 0
-	local nsides = 1000
 	local rotation = 0
 	local color = {1, 1, 1, 1}
 	local resizing = false
@@ -21,8 +17,7 @@ return (function()
 
 	local function rotatePoint(px, py)
 		--3d arena == all signs equal
-		local a = math.rad(rotation)
-		local cosa, sina = math.cos(a), math.sin(a)
+		local cosa, sina = math.cos(rotation), math.sin(rotation)
 		return {x = (px - cx) * cosa - (py - cy) * sina + cx, y = (px - cx) * sina + (py - cy) * cosa + cy}
 	end
 
@@ -48,11 +43,6 @@ return (function()
 		end
 	end
 
-	function self.load()
-		resetOriginal()
-		recalculateVertices()
-	end
-
 	function self.update(dt)
 		if (resizing) then
 			if (timer < 1) then
@@ -64,16 +54,16 @@ return (function()
 			end
 			for i=1,#resized do
 				gons[i] = math.lerp(original[i], resized[i], timer)
-				recalculateVertices()
-				calculateCentroid()
 			end
+			recalculateVertices()
+			calculateCentroid()
 		end
 	end
 
 	function self.draw()
 		lg.setLineWidth(5)
 		love.graphics.translate(cx, cy)
-		love.graphics.rotate(math.rad(rotation))
+		love.graphics.rotate(rotation)
 		love.graphics.translate(-cx, -cy)
 		love.graphics.setColor(color)
 		if circle then
@@ -102,21 +92,29 @@ return (function()
 		color = {r, g, b, a}
 	end
 
-	function self.Ellipse(r1, r2, x, y)
+	function self.Ellipse(r1, r2, x, y, n)
 		circle = true
 		rx = r1
 		ry = r2
 		cx = x
 		cy = y
+		nsides = n or 1000
 	end
 
-	function self.Circle(r, x, y)
-		self.Ellipse(r, r, x, y)
+	function self.Circle(r, x, y, n)
+		self.Ellipse(r, r, x, y, n)
 	end
 
 	function self.Regular(r, x, y, n)
-		self.Circle(r, x, y)
-		nsides = n
+		self.Circle(r, x, y, n)
+		local theta = math.rad(360 / n)
+		local a = {}
+		for i=1,n*2,2 do
+			local angle = theta * math.floor(i / 2)
+			a[i] = x + r * math.cos(angle)
+			a[i+1] = y + r * math.sin(angle)
+		end
+		self.Polygon(a, true)
 	end
 
 	function self.Rectangle(x1, y1, x3, y3)
@@ -124,17 +122,15 @@ return (function()
 	end
 
 	function self.RotateCWBy(a)
-		rotation = (rotation + a) % 360
-		recalculateVertices()
+		self.Rotate(math.deg(rotation) + a)
 	end
 
 	function self.RotateCCWBy(a)
-		rotation = (rotation - a) % 360
-		recalculateVertices()
+		self.Rotate(math.deg(rotation) + a)
 	end
 
 	function self.Rotate(a)
-		rotation = a % 360
+		rotation = math.rad(a)
 		recalculateVertices()
 	end
 
@@ -161,25 +157,31 @@ return (function()
 			end
 			return inside
 		else
-			--TODO: check ellipse
-			return false
+			if rx == ry then
+				local ox, oy = x-cx, y-cy
+				return ox^2+oy^2 < rx^2
+			else
+				local a = rotatePoint(x, y)
+				return (a.x - cx)^2/rx^2 + (a.y - cy)^2/ry^2 < 1
+			end
 		end
 	end
 
-	function self.Polygon(t)
+	function self.Polygon(t, regular)
 		circle = false
 		gons = t
 		resetOriginal()
-		calculateCentroid()
+		recalculateVertices()
+		if not regular then calculateCentroid() end
 	end
 
 	function self.Resize(new, s, immediate)
 		seconds = s or seconds
-		if (immediate) then
+		if immediate then
 			self.Polygon(new)
 		else
 			resized = new
-			if (#gons > #new) then
+			if #gons > #new then
 				local s = #new
 				local sign = resized[#new] > resized[#new - 2] and 1 or -1
 				for i=#new+1,#gons,2 do
@@ -187,7 +189,7 @@ return (function()
 					resized[i+1] = resized[s] + sign * 1
 					s = s + 2
 				end
-			elseif (#gons < #new) then
+			elseif #gons < #new then
 				local s = 1
 				local old = {}
 				for i=1,#gons do

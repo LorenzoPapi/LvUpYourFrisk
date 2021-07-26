@@ -49,11 +49,14 @@ return (function()
 	end
 	
 	local time = os.time
+	local getinfo = debug.getinfo
 	os = nil
 	io = nil
 	debug = nil
 
 	os = {}
+	debug = {}
+	debug.getinfo = getinfo
 	os.time = time
 
 	function self.DestroyWindow()

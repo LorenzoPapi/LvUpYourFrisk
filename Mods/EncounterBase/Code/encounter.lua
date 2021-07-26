@@ -25,11 +25,15 @@ return (function()
 		file.Write("REPLACED!")
 		file.Move("moved.bak")
 		file.Write("MOVED!")
+		Audio.Stop(self.music)
+		Player.lv = 10
+		Arena.Ellipse(100, 85, 320, 240)
 		--Arena.Regular(-130, 320, 240, 16)
 		--Arena.Polygon({35, 253, 35, 387, 605, 387, 605, 200, 300, 200, 400, 300}, true)
 	end
 
 	function self.EnemyDialogueStarting()
+		Player.Hurt(1)
 	end
 
 	function self.EnemyDialogueEnding()
@@ -44,6 +48,7 @@ return (function()
 						192, 10,
 						102, 300,
 						440, 300 }
+		Player.Hurt(1)
 	end
 
 	function self.DefenseEnding()
@@ -64,7 +69,7 @@ return (function()
 	function self.Update(dt)
 		--Misc.MoveWindow(math.cos(Time.frameCount) * 10, math.sin(Time.frameCount) * 10)
 		if (GetCurrentState() == "ENEMYDIALOGUE" or GetCurrentState() == "DEFENDING") then
-			--Arena.RotateCWBy(love.timer.getDelta() * 100)
+			Arena.RotateCWBy(1)
 			--Arena.SetColor(love.timer.getTime() * math.random(1, 100))
 		end
 	end

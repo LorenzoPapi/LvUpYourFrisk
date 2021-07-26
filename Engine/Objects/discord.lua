@@ -4,21 +4,15 @@ return (function()
 	
 	local self = {}
 
-	local presence = {
+	local presence = createSpecialTable({
 		details = "Title Screen",
-		startTimestamp = os.time(),
 		largeImageKey = "rpc",
 		largeImageText = "LVupYourFrisk"
-	}
-	local _p = presence
-	presence = {}
-	setmetatable(presence, {
-		__newindex = function (t,k,v)
-			_p[k] = v
-			discordRPC.updatePresence(_p)
-		end
-	})
-	discordRPC.updatePresence(_p)
+	}, function(proxy, k, v)
+		discordRPC.updatePresence(proxy)
+	end)
+
+	presence.startTimestamp = os.time()
 
 	function self.SetTitle(s)
 		presence.details = s

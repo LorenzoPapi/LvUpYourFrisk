@@ -24,6 +24,7 @@ return (function()
 		if loop then
 			table.insert(looping, file)
 		end
+		table.remove(paused, table.indexof(paused, file))
 	end
 
 	function self.PlayVoice(file, loop, volume)
@@ -56,6 +57,7 @@ return (function()
 
 	function self.Stop(file)
 		sounds[file]:stop()
+		table.insert(paused, file)
 	end
 
 	function self.StopVoice(file)
@@ -106,7 +108,7 @@ return (function()
 
 	function self.update(dt)
 		for _,v in pairs(looping) do
-			if self.NotPlaying(v) and not table.contains(paused, v) then
+			if self.NotPlaying(v) and not table.containsValue(paused, v) then
 				sounds[v]:play()
 			end
 		end
