@@ -7,6 +7,7 @@ return (function()
 	self.atk = 10
 	self.def = 20
 	self.check = "Likes to dance and pose."
+	self.enemypositions = {{300, 200}}
 	--self.currentdialogue = {"Current"}
 	--self.font = "uidialog"
 

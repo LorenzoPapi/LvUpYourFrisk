@@ -58,11 +58,11 @@ return (function()
 		if (button == -1) then
 			action = -1
 		else
-			if not (button == action) then
+			if button ~= action then
 				Audio.PlaySound("move")
 			end
 			action = math.clamp(button, 1, #self.buttons, true)
-			Player.MoveTo(self.buttons[action].px, self.buttons[action].py)
+			Player.MoveTo(self.buttons[action].px + 8, self.buttons[action].py + 8, true)
 		end
 	end
 
@@ -135,8 +135,8 @@ return (function()
 			bdialog = CreateText(insert, "uidialog", 53, 269)
 			bdialog.SetVoice("uifont")
 		end
-		self.SetCurrentText(bdialog)
 		State("BATTLEDIALOG")
+		self.SetCurrentText(bdialog)
 	end
 
 	function self.CreateChoice(text, i)

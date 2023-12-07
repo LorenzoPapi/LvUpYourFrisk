@@ -95,7 +95,7 @@ return (function()
 			Audio.PlaySound("confirm")
 			self.resetPage()
 			self.UseItem(self.current)
-			if not (self.GetItem(self.current).type == 3) then
+			if self.GetItem(self.current).type ~= 3 then
 				table.remove(self.items, self.current)
 			end
 			self.current = 1
@@ -112,7 +112,7 @@ return (function()
 		self.current = math.clamp(self.current, 1, #self.items)
 
 		local newpage = math.ceil(self.current / 4)
-		if not (newpage == self.page) then
+		if newpage ~= self.page then
 			self.page = newpage
 			self.redrawPage()
 		end

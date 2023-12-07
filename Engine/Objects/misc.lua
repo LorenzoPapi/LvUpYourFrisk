@@ -47,17 +47,6 @@ return (function()
 	else
 		self.MachineName = os.getenv("USER")
 	end
-	
-	local time = os.time
-	local getinfo = debug.getinfo
-	os = nil
-	io = nil
-	debug = nil
-
-	os = {}
-	debug = {}
-	debug.getinfo = getinfo
-	os.time = time
 
 	function self.DestroyWindow()
 		love.event.quit()
@@ -103,11 +92,11 @@ return (function()
 	end
 
 	function self.FileExists(path)
-		return not (love.filesystem.getInfo(cleanAndAssert(path), "file") == nil)
+		return love.filesystem.getInfo(cleanAndAssert(path), "file") ~= nil
 	end
 
 	function self.DirExists(path)
-		return not (love.filesystem.getInfo(cleanAndAssert(path), "directory") == nil)
+		return love.filesystem.getInfo(cleanAndAssert(path), "directory") ~= nil
 	end
 
 	function self.ListDir(path, folders)
@@ -172,7 +161,7 @@ return (function()
 
 		function _file.Copy(path, overwrite)
 			local new = Misc.OpenFile(path)
-			if not (#new.ReadBytes() == 0) and not overwrite then
+			if #new.ReadBytes() ~= 0 and not overwrite then
 				error("Cannot copy the file because it's already present!")
 			end
 			new.WriteBytes(_file.ReadBytes())

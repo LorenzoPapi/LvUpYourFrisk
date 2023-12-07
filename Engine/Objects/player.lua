@@ -28,6 +28,7 @@ return (function()
 		--Vertices defining the box of the player, the more vertex the more accurate, but performance might get worse (I guess?)
 		--We consider the pivot to be in the TOP-LEFT of the sprite
 		box = {{2, 0}, {0, 2}, {0, 9}, {6, 15}, {9, 15}, {15, 9}, {15, 2}, {13, 0}} 
+		--box = {{0, 0}, {0, 16}, {16, 16}, {16, 0}}
 	}, function(proxy, k, v)
 		if not table.containsValue(proxy, debug.getinfo(3, "f").func) and (k == "x" or k == "y" or k == "maxhpshift" or k == "weapon" or k == "weaponatk" or k == "armor" or k == "armordef" or k == "lastenemychosen" or k == "lasthitmultiplier" or k == "ishurting" or k == "ismoving") then
 			error("You cannot set value of " .. k .. " because it's readonly")
@@ -49,6 +50,7 @@ return (function()
 	end)
 
 	self.sprite.SetColor(1, 0, 0)
+	self.sprite.SetPivot(8, 8)
 
 	function self.Hurt(value, invul, ignoredef, playsound)
 		if self.ishurting then return end
@@ -82,10 +84,19 @@ return (function()
 		self.MoveTo(self.x + x, self.y + y)
 	end
 
-	function self.MoveTo(x, y)
-		self.x = x
-		self.y = y
-		self.sprite.MoveTo(x, y)
+	function self.MoveTo(x, y, ignorewalls)
+		if ignorewalls then
+			self.x = x
+			self.y = y
+			self.sprite.MoveTo(x, y)
+		else
+			res, pos = Arena.collide(x, y)
+			if res then
+				self.x = x
+				self.y = y
+				self.sprite.MoveTo(x, y)
+			end
+		end
 	end
 
 	function self.ForceHP(newhp)
@@ -105,14 +116,26 @@ return (function()
 
 	function self.draw()
 		love.graphics.setColor(1, 1, 1, self.sprite.alpha)
-		local a = {}
-		for i=1,#self.box do
-			table.insert(a, self.x + self.box[i][1])
-			table.insert(a, self.y + self.box[i][2])
-		end	
-		love.graphics.polygon("line", a)
+		love.graphics.points(self.x, self.y)
+		-- local a = {}
+		-- for i=1,#self.box do
+		-- 	table.insert(a, self.x + self.box[i][1])
+		-- 	table.insert(a, self.y + self.box[i][2])
+
+		-- 	table.insert(a, self.x)
+		-- 	table.insert(a, self.y + self.box[i][2])
+
+		-- 	table.insert(a, self.x)
+		-- 	table.insert(a, self.y)
+
+		-- 	table.insert(a, self.x + self.box[i][1])
+		-- 	table.insert(a, self.y)
+		-- end	
+		-- love.graphics.points(a)
 		love.graphics.setColor(1, 1, 1, 1)
 	end
+
+	local lastX, lastY = 0, 0
 
 	function self.update(dt)
 		self.ishurting = invulTimer > 0
@@ -122,30 +145,27 @@ return (function()
 		end
 
 		if GetCurrentState() == "DEFENDING" then
-			local mul = Input.GetKey(Input.Cancel) > 0 and 1 or 2
-			local x = self.x
-			local y = self.y
-			if Input.GetKey(Input.Up) > 0 then
-				y = y - mul
-			end
-			if Input.GetKey(Input.Down) > 0 then
-				y = y + mul
-			end
-			if Input.GetKey(Input.Left) > 0 then
-				x = x - mul
-			end
-			if Input.GetKey(Input.Right) > 0 then
-				x = x + mul
-			end
+			local speed = speed or 2
+			local key = Input.GetKey
+			if key(Input.Cancel) > 0 then speed = speed / 2 end
 
-			for i=1,#self.box do
-				local p = self.box[i]
-				if not (Arena.IsInside(x+p[1],y+p[2])) then
-					break
-				elseif i == #self.box then
-					self.MoveTo(x, y)
-				end
-			end
+			local movementX = 0
+			local movementY = 0
+			movementX = movementX - (key(Input.Left) > 0 and 1 or 0)
+			movementX = movementX + (key(Input.Right) > 0 and 1 or 0)
+			movementY = movementY + (key(Input.Down) > 0 and 1 or 0)
+			movementY = movementY - (key(Input.Up) > 0 and 1 or 0)
+
+			movementX = speed * movementX
+			movementY = speed * movementY
+
+			self.Move(movementX, movementY)
+
+			res, pos = Arena.collide(self.x, self.y)
+			self.MoveTo(pos.x, pos.y)
+
+			self.ismoving = (self.x ~= last_px or self.y ~= last_py)
+			lastX, lastY = self.x, self.y
 		end
 	end
 

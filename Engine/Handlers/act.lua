@@ -79,7 +79,7 @@ return (function()
 		self.current = math.clamp(self.current, 1, GetCurrentState() == "ACTMENU" and #Encounter.enemies or #self.acts)
 
 		local newpage = math.ceil(self.current / 4)
-		if not (newpage == self.page) then
+		if newpage ~= self.page then
 			self.page = newpage
 			self.redrawPage()
 		end

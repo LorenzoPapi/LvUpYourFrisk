@@ -82,23 +82,18 @@ return (function()
 		end
 
 		function _sprite.update(dt)
-			if (#_sprite.list > 1) then
+			if #_sprite.list > 1 then
 				local s = _sprite
-				if (s.frame <= #s.list) then
-					timer = timer + dt
-				else
-					timer = 0
-				end
-				if (timer >= s.rate) then
+				timer = s.frame <= #s.list and timer + dt or 0
+				if timer >= s.rate then
 					timer = timer - s.rate
 					s.frame = s.frame + 1
 				end
-				if (s.frame == (#s.list + 1)) then
+				if s.frame == (#s.list + 1) then
 					s.frame = 1
-					if (s.mode == "oneshot") then
-						-- Make list contain only last frame
+					if s.mode == "oneshot" then
 						s.list = {s.list[#s.list]}
-					elseif (s.mode == "oneshotempy") then
+					elseif s.mode == "oneshotempty" then
 						s.list = {"empty"}
 					end
 				end

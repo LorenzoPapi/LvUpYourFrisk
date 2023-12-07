@@ -1,87 +1,123 @@
 return (function()
-	local self = {}
-
-	local circle = false
-	local rx, ry, cx, cy, nsides = 0, 0, 0, 0, 1000
-
-	local original = {}
-	local gons = {}
-	local resized = {}
-	local vertices = {}
-
-	local rotation = 0
-	local color = {1, 1, 1, 1}
-	local resizing = false
-	local timer = 0
-	local seconds = 2
-
-	local function rotatePoint(px, py)
-		--3d arena == all signs equal
-		local cosa, sina = math.cos(rotation), math.sin(rotation)
-		return {x = (px - cx) * cosa - (py - cy) * sina + cx, y = (px - cx) * sina + (py - cy) * cosa + cy}
-	end
-
-	local function recalculateVertices()
-		table.clear(vertices)
-		for i=1,#gons,2 do
-			table.insert(vertices, rotatePoint(gons[i], gons[i+1]))
+	local self = createSpecialTable({
+		width = 570,
+		height = 130,
+		x = 320,
+		y = 320.5,
+		currentwidth = 570,
+		currentheight = 130,
+		currentx = 320,
+		currenty = 320.5,
+		isResizing = false,
+		isMoving = false,
+		isModifying = false,
+		color = {1, 1, 1, 1},
+		rotation = 0
+	}, function(t, k, v)
+		if not table.containsValue(t, debug.getinfo(3, "f").func) and type(v) ~= "function" then
+			error("Cannot modify value " .. k .. " because it's readonly")
 		end
+	end)
+
+	local movePlayer = true
+	local vertices = {
+			self.x - (self.width / 2), self.y - (self.height / 2),
+			self.x - (self.width / 2), self.y + (self.height / 2),
+			self.x + (self.width / 2), self.y + (self.height / 2),
+			self.x + (self.width / 2), self.y - (self.height / 2)
+	}
+	local resizeTimer, moveTimer, seconds = 0, 0,2
+	local nwidth, nheight = self.currentwidth, self.currentheight
+	local nx, ny = self.currentx, self.currenty
+	local hidden = false
+
+	--3d arena == all signs equal	
+	local function rotatePointAround0(px, py, rotation)
+		return px * math.cos(rotation) - py * math.sin(rotation), py * math.cos(rotation) + px * math.sin(rotation)
 	end
 
-	local function calculateCentroid()
-		for i=1,#gons,2 do
-			cx = cx + gons[i]
-			cy = cy + gons[i+1]
+	local function rotatePointAroundArena(px, py)
+		local x, y = rotatePointAround0(px, py, self.rotation)
+		return x + self.currentx, y + self.currenty
+	end
+
+	local function rotateArena()
+		local halfW, halfH = self.currentwidth / 2, self.currentheight / 2
+		local px1, py1 = rotatePointAroundArena(-halfW, -halfH)
+		local px2, py2 = rotatePointAroundArena(-halfW, halfH)
+		local px3, py3 = rotatePointAroundArena(halfW, halfH)
+		local px4, py4 = rotatePointAroundArena(halfW, -halfH)
+		vertices = {px1, py1, px2, py2, px3, py3, px4, py4}
+	end
+
+	--Dimi thank you for the rotating arena so good
+	function self.collide(px, py)
+		local width, height = self.currentwidth - 4, self.currentheight - 4
+		
+		local r, l, u, d = width/2-8, -width/2+8, height/2-8, -height/2+8
+
+		local apx, apy = rotateAround0(px - self.currentx, py - self.currenty, -self.rotation)
+
+		local interX, interY = apx, apy
+		if apx >= r then
+			interX = r
+		elseif apx <= l then
+			interX = l
 		end
-		cx = 2 * cx / #gons
-		cy = 2 * cy / #gons
-	end
-
-	local function resetOriginal()
-		for i=1,#gons do
-			original[i] = gons[i]
+		if apy >= u then
+			interY = u
+		elseif apy <= d then
+			interY = d
 		end
+
+		interX, interY = rotateAround0(interX, interY, self.rotation)
+		return apx <= r and apx >= l and apy <= u and apy >= d, {x = interX + ax, y = interY + ay}
 	end
 
-	function self.update(dt)
-		if (resizing) then
-			if (timer < 1) then
-				timer = timer + dt / (seconds)
-			elseif (timer >= 1) then
-				timer = 0
-				resizing = false
-				resetOriginal()
-			end
-			for i=1,#resized do
-				gons[i] = math.lerp(original[i], resized[i], timer)
-			end
-			recalculateVertices()
-			calculateCentroid()
-		end
-	end
-
-	function self.draw()
-		lg.setLineWidth(5)
-		love.graphics.translate(cx, cy)
-		love.graphics.rotate(rotation)
-		love.graphics.translate(-cx, -cy)
-		love.graphics.setColor(color)
-		if circle then
-			lg.ellipse("line", cx, cy, rx, ry, nsides)
+	function self.Resize(width, height, s)
+		seconds = s or seconds
+		assert(seconds >= 0, "\nTime of resizing cannot be negative!")
+		if seconds == 0 then
+			self.width = width
+			self.height = height
+			self.currentwidth = width
+			self.currentheight = height
 		else
-			lg.polygon("line", gons)
-			-- local a = {}
-			-- for i=1,#vertices do
-			-- 	table.insert(a, vertices[i].x)
-			-- 	table.insert(a, vertices[i].y)
-			-- end
-			-- love.graphics.setLineWidth(10)
-			-- lg.polygon("line", a)
-			-- love.graphics.setLineWidth(1)
+			nwidth = width
+			nheight = height
+			self.isResizing = true
+			self.isModifying = true
 		end
-		love.graphics.setColor(1, 1, 1, 1)
-		lg.origin()
-		lg.setLineWidth(1)
+	end
+
+	function self.MoveTo(x, y, mp, s)
+		movePlayer = mp or true
+		seconds = s or seconds
+		assert(seconds >= 0, "\nTime of moving cannot be negative!")
+		if seconds == 0 then
+			self.x = x
+			self.y = y
+			self.currentx = x
+			self.currenty = y
+		else
+			nx = x
+			ny = y
+			self.isMoving = true
+			self.isModifying = true
+		end
+	end
+
+	function self.MoveToAndResize(x, y, w, h, mp, s)
+		self.MoveTo(x, y, mp, s)
+		self.Resize(w, h, s)
+	end
+
+	function self.Move(x, y, mp, s)
+		self.MoveTo(self.x + x, self.y + y, mp, s)
+	end
+
+	function self.MoveAndResize(x, y, w, h, mp, s)
+		self.MoveToAndResize(self.x + x, self.y + y, w, h, mp, s)
 	end
 
 	function self.SetColor(rgba)
@@ -89,121 +125,63 @@ return (function()
 		local g = bit.band(bit.rshift(rgba, 16), 255) / 255.0
 		local b = bit.band(bit.rshift(rgba, 8), 255) / 255.0
 		local a = bit.band(rgba, 255) / 255.0
-		color = {r, g, b, a}
+		self.SetColor(r, g, b, a)
 	end
 
-	function self.Ellipse(r1, r2, x, y, n)
-		circle = true
-		rx = r1
-		ry = r2
-		cx = x
-		cy = y
-		nsides = n or 1000
+	function self.SetColor(r, g, b, a)
+		self.color = {r, g, b, a}
 	end
 
-	function self.Circle(r, x, y, n)
-		self.Ellipse(r, r, x, y, n)
+	function self.Rotate(rot)
+		self.rotation = math.rad(rot)
 	end
 
-	function self.Regular(r, x, y, n)
-		self.Circle(r, x, y, n)
-		local theta = math.rad(360 / n)
-		local a = {}
-		for i=1,n*2,2 do
-			local angle = theta * math.floor(i / 2)
-			a[i] = x + r * math.cos(angle)
-			a[i+1] = y + r * math.sin(angle)
-		end
-		self.Polygon(a, true)
+	function self.Show()
+		hidden = false
 	end
 
-	function self.Rectangle(x1, y1, x3, y3)
-		self.Polygon({x1, y1, x1, y3, x3, y3, x3, y1})
+	function self.Hide()
+		hidden = true
 	end
 
-	function self.RotateCWBy(a)
-		self.Rotate(math.deg(rotation) + a)
-	end
-
-	function self.RotateCCWBy(a)
-		self.Rotate(math.deg(rotation) + a)
-	end
-
-	function self.Rotate(a)
-		rotation = math.rad(a)
-		recalculateVertices()
-	end
-
-	function self.IsInside(x, y)
-		if not circle then
-			local higher0, higher1, inside, vtx0, vtx1
-	
-			vtx0 = vertices[#vertices]
-			vtx1 = vertices[1]
-
-			higher0 = (vtx0.y >= y)
-			inside = false
-	
-			for i=2,#vertices+1 do
-				higher1 = (vtx1.y >= y)
-				if (higher0 ~= higher1) then
-					if ( ((vtx1.y - y) * (vtx0.x - vtx1.x) >= (vtx1.x - x) * (vtx0.y - vtx1.y)) == higher1 ) then
-						inside = not inside
-					end
-				end
-				higher0  = higher1
-				vtx0	 = vtx1
-				vtx1	 = vertices[i]
-			end
-			return inside
-		else
-			if rx == ry then
-				local ox, oy = x-cx, y-cy
-				return ox^2+oy^2 < rx^2
+	function self.update(dt)
+		if self.isResizing then
+			self.currentwidth, self.currentheight = math.lerp(self.width, nwidth, resizeTimer), math.lerp(self.height, nheight, resizeTimer)
+			if resizeTimer < 1 then
+				resizeTimer = resizeTimer + dt / seconds
 			else
-				local a = rotatePoint(x, y)
-				return (a.x - cx)^2/rx^2 + (a.y - cy)^2/ry^2 < 1
+				resizeTimer = 0
+				self.width = self.currentwidth
+				self.height = self.currentheight
+				self.isResizing = false
+				self.isModifying = false
 			end
 		end
-	end
-
-	function self.Polygon(t, regular)
-		circle = false
-		gons = t
-		resetOriginal()
-		recalculateVertices()
-		if not regular then calculateCentroid() end
-	end
-
-	function self.Resize(new, s, immediate)
-		seconds = s or seconds
-		if immediate then
-			self.Polygon(new)
-		else
-			resized = new
-			if #gons > #new then
-				local s = #new
-				local sign = resized[#new] > resized[#new - 2] and 1 or -1
-				for i=#new+1,#gons,2 do
-					resized[i] = resized[s-1] + sign * 1
-					resized[i+1] = resized[s] + sign * 1
-					s = s + 2
-				end
-			elseif #gons < #new then
-				local s = 1
-				local old = {}
-				for i=1,#gons do
-					old[i] = gons[i]
-				end
-				for i=#gons+1,#new,2 do
-					gons[i] = old[s] - 0.01
-					gons[i+1] = old[s+1] - 0.01
-					s = math.clamp(s + 2, 1, #old, true)
-				end
-				resetOriginal()
+		if self.isMoving then
+			self.currentx, self.currenty = math.lerp(self.x, nx, moveTimer), math.lerp(self.y, ny, moveTimer)
+			if movePlayer then
+				Player.Move(self.currentx - Player.x, self.currenty - Player.y)
 			end
-			resizing = true
-			timer = 0
+			if moveTimer < 1 then
+				moveTimer = moveTimer + dt / seconds
+			else
+				moveTimer = 0
+				self.x = self.currentx
+				self.y = self.currenty
+				self.isMoving = false
+				self.isModifying = false
+			end
+		end
+		rotateArena()
+	end
+
+	function self.draw()
+		if not hidden then
+			lg.setLineWidth(5)
+			lg.setColor(self.color)
+			lg.polygon("line", vertices)
+			lg.setColor(1, 1, 1, 1)
+			lg.setLineWidth(1)
 		end
 	end
 

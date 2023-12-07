@@ -16,14 +16,14 @@ return (function()
 	self.def = 0
 	self.check = ""
 	self.canspare = false
+	self.monstersprite = nil
+	self.sprite = ""
 
 	--NYI
 	self.comments = {}
 	self.defensemisstext = ""
 	self.noattackmisstext = ""
 	self.isactive = true
-	self.sprite = ""
-	self.monstersprite = nil
 	self.dialogbubble = ""
 	self.dialogueprefix = ""
 	self.maxhp = 0

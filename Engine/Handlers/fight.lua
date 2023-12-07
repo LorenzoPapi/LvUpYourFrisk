@@ -11,6 +11,7 @@ return (function()
 	self.page = 1
 	self.xbar = 595
 	local bar = nil
+	local slice = nil
 	local hit = false
 
 	function self.Start()
@@ -31,6 +32,8 @@ return (function()
 				State("ATTACKING")
 			elseif (GetCurrentState() == "ATTACKING") then
 				bar.SetAnimation({"fight_bar_0", "fight_bar_1"}, 1/12)
+				slice.SetAnimation({"fight_slice_1", "fight_slice_2", "fight_slice_3", "fight_slice_4", "fight_slice_5"}, 1/6, "oneshotempty")
+				slice.alpha = 1
 				hit = true
 			end
 			return
@@ -46,7 +49,7 @@ return (function()
 		self.current = math.clamp(self.current, 1, #Encounter.enemies)
 
 		local newpage = math.ceil(self.current / 4)
-		if not (newpage == self.page) then
+		if newpage ~= self.page then
 			self.page = newpage
 			self.redrawPage()
 		end
@@ -82,7 +85,7 @@ return (function()
 	end
 
 	function self.update(dt)
-		if (not hit and self.xbar > 30) then
+		if not hit and self.xbar > 30 then
 			bar.Move(-10, 0)
 			self.xbar = bar.x
 		end
@@ -92,6 +95,9 @@ return (function()
 		Player.sprite.alpha = 0
 		local target = CreateSprite("fight_target", 37 + 10, 255 + 7.5)
 		bar = CreateSprite("fight_bar_0", 595, 255)
+		local position = Encounter.enemypositions[self.current]
+		slice = CreateSprite("fight_slice_0", position[1], position[2])
+		slice.alpha = 0
 	end
 
 	return self

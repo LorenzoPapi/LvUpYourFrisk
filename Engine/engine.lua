@@ -6,16 +6,17 @@ return (function()
 	local enemyDialogues = {}
 
 	function self.loadEngine()
-		Arena.Rectangle(35, 253, 605, 387)
 		UI.load()
 		BattleDialog(Encounter.encountertext)
 		State("MENUBATTLE")
 		Audio.PlayMusic(Encounter.music, true)
+		
 		Encounter.EncounterStarting()
 	end
 
 	function self.drawEngine()
 		--TODO: add layers: layers can be called in order, bottom being called first and top being called last
+		--a layer is a table containing sprites, and has a name as first parameter
 		Sprites.draw()		
 		Texts.draw()
 		Arena.draw()
@@ -100,7 +101,7 @@ return (function()
 		if (ns == "ENEMYDIALOGUE") then
 			SetAction(-1)
 			BattleDialog("")
-			Arena.Resize(Encounter.fightarena, 2)
+			Arena.MoveToAndResize(320, 240, 100, 100)
 			Encounter.EnemyDialogueStarting()
 			for i=1,#Encounter.enemies do
 				local enemy = Encounter.enemies[i]
@@ -117,7 +118,6 @@ return (function()
 			end
 			table.clear(enemyDialogues)
 			Encounter.EnemyDialogueEnding()
-			Arena.Resize(Encounter.fightarena, 3)
 		elseif (ns == "MENUBATTLE" and os == "DEFENDING") then
 			Encounter.DefenseEnding()
 			turn = turn + 1
@@ -153,15 +153,15 @@ return (function()
 	end
 
 	function SelectChoice(i)
-		local px = 45 --selection - 25
-		local py = 278  --selection + 8
+		local px = 45 + 8 	--selection - 25
+		local py = 278 + 8  --selection + 8
 		if (i%2==0) then
-			px = 320
+			px = 320 + 8
 		end
 		if (i%3==0 or i%4==0) then
-			py = 308
+			py = 308 + 8
 		end
-		Player.MoveTo(px, py)
+		Player.MoveTo(px, py, true)
 	end
 
 	function GetCurrentState()

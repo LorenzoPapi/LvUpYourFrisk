@@ -1,4 +1,5 @@
 --might remove if I feel like it
+require("utils")
 lg = love.graphics
 local menu = "main"
 local mod = 1
@@ -7,7 +8,6 @@ local previews = {}
 local modName = ""
 local soundext = {".wav", ".mp3", ".ogg"}
 local noreload = {"input", "time", "misc", "discord"}
-local forbidden = {"os", "io", "debug"}
 
 local function forAllFilesIn(directory, callback)
 	local dirs = {}
@@ -62,7 +62,7 @@ local function loadAllMods()
 	for i,f in pairs(love.filesystem.getDirectoryItems("Mods")) do
 		if love.filesystem.getInfo("Mods/" .. f, "directory") then
 			table.insert(mods, f)
-			if not (love.filesystem.getInfo("Mods/" .. f .. "/Assets/preview.png", "file") == nil) then
+			if love.filesystem.getInfo("Mods/" .. f .. "/Assets/preview.png", "file") then
 				previews[i] = lg.newImage("Mods/" .. f .. "/Assets/preview.png")
 			end
 		end
@@ -99,7 +99,9 @@ local function loadCurrentMod()
 	Encounter = require(dir .. "/Code/encounter")
 	for k,v in ipairs(Encounter.enemies) do
 		Encounter.enemies[k] = require(dir .. "/Code/Monsters/" .. v)
-		Encounter.enemies[k].scriptName = v
+		local e = Encounter.enemies[k]
+		e.scriptName = v
+		e.monstersprite = CreateSprite(e.sprite, Encounter.enemypositions[k][1], Encounter.enemypositions[k][2])
 	end
 	loadResourcesFromDirectory(dir .. "/Assets")
 	Misc.setModDirectory(dir)
@@ -116,33 +118,16 @@ function unloadCurrentMod()
 	table.clear(fonts)
 	table.clear(sounds)
 	loadResourcesFromDirectory("Default")
+	for k,v in ipairs(Encounter.enemies) do
+		Encounter.enemies[k] = v.scriptName
+	end
 	for k,v in pairs(package.loaded) do
-		if k:sub(1, 6) == "Engine" and not table.containsValue(noreload, k:sub(16)) then
+		if k:sub(1, 4) == "Mods" or (k:sub(1, 6) == "Engine" and not table.containsValue(noreload, k:sub(16))) then
 			package.loaded[k] = nil
 		end
 	end
-	package.loaded["Mods/" .. modName .. "/Code/encounter"] = nil
-	for k,v in ipairs(Encounter.enemies) do
-		Encounter.enemies[k] = v.scriptName
-		package.loaded["Mods/"  .. modName .. "/Code/Monsters/" .. v.scriptName] = nil
-	end
 	loadAllMods()
 	modName = ""
-end
-
-function createSpecialTable(t, onaccess)
-	local proxy = t
-	t = {}
-	setmetatable(t, {
-		__index = function(t, k)
-			return proxy[k]
-		end,
-		__newindex = function(t, k, v)
-			proxy[k] = v
-			onaccess(proxy, k, v, t)
-		end
-	})
-	return t
 end
 
 function love.draw()
@@ -210,74 +195,6 @@ function love.update(dt)
 			unloadCurrentMod()
 		end
 	end
-end
-
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields+1] = c end)
-	return fields
-end
-
-function table.indexof(t, e)
-	for i,v in pairs(t) do
-		if (v == e) then
-			return i
-		end
-	end
-	return 0
-end
-
-function table.containsValue(t, e)
-	for _,v in pairs(t) do
-		if (v == e) then
-			return true
-		end
-	end
-	return false
-end
-
-function table.containsKey(t, e)
-	for k in pairs(t) do
-		if (k == e) then
-			return true
-		end
-	end
-	return false
-end
-
-function table.clear(t)
-	for k in pairs(t) do
-		t[k] = nil
-	end
-end
-
-function math.clamp(v, min, max, recur)
-	if recur then
-		return (v > max) and min or (v < min and max or v)
-	end
-	return math.max(min, math.min(v, max))
-end
-
-function math.lerp(a, b, t)
-	return (1-t)*a + t*b
-end
-
-local _require = require
-function require(name)
-	if not table.containsValue(forbidden, name) then
-		return _require(name)
-	else
-		error("\nTrying to require a forbidden package?\nMistake or made on purpose?\nCaught in 4k.")
-	end
-end
-
-function getfenv(f)
-	error("\nTrying to get environment for something?\nMistake or made on purpose?\nCaught in 4k.")
-end
-
-function setfenv(f, t)
-	error("\nTrying to set environment for something?\nMistake or made on purpose?\nCaught in 4k.")
 end
 
 Discord = require("Engine/Objects/discord")

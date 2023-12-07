@@ -30,7 +30,7 @@ return (function()
 				if (c == "[") then
 					local index = i
 					local cmd = ""
-					while not (c == "]") do
+					while c ~= "]" do
 						cmd = cmd .. c
 						i = i + 1
 						c = content:sub(i, i)

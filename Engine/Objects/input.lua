@@ -24,7 +24,7 @@ return (function()
 				keys[key] = 2
 				return 1
 			end
-		elseif (keys[key] == -1) then
+		elseif keys[key] == -1 then
 			keys[key] = nil
 			return -1
 		end
@@ -36,11 +36,11 @@ return (function()
 	end
 	
 	function self.GetKey(key)
-		if (type(key) == "table") then
+		if type(key) == "table" then
 			local r = 0
 			for i=1,#key do
 				r = GetState(key[i])
-				if not (r == 0) then
+				if r ~= 0 then
 					break
 				end
 			end
@@ -49,7 +49,6 @@ return (function()
 		return GetState(key)
 	end
 
-	-- returns wheter key is just pressed 
 	function self.IsDown(key)
 		return self.GetKey(key) == 1
 	end
